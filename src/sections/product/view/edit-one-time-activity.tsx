@@ -1,4 +1,4 @@
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, set } from 'react-hook-form';
 import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Snackbar, Alert, Slider } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
 import { useState, useEffect } from "react";
@@ -7,12 +7,29 @@ import { start } from 'repl';
 import { useParams } from 'react-router-dom';
 
 // ----------------------------------------------------------------------
+export type ActivityProp = {
+    name: string;
+    location: string;
+    description: string;
+    totalSlots: number;
+    startDate: string;
+    endDate: string;
+    frequencyTime: string;
+    frequencyDay: number;
+    duration: string;
+    signUps: number;
+    creditCost: number;
+    businessId: string;
+    isOneTime: boolean;
+    scheduleId: string;
+    customers: string[];
+};
 
 export function EditNewOneTimeActivityPage() {
     const { register, handleSubmit, control } = useForm();
     const Router = useRouter();
     const { activityId } = useParams();
-    const [activities, setActivities] = useState<any[]>([]);
+    const [activities, setActivities] = useState<ActivityProp>();
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -32,6 +49,14 @@ export function EditNewOneTimeActivityPage() {
             });
     }, [activityId]);
 
+    console.log("Activities", activities);
+    if (!activities) {
+        return <div>Loading...</div>;
+    }
+    const handleActivityChange = (field: keyof ActivityProp, value: any) => {
+        setActivities((prev) => prev ? { ...prev, [field]: value } : prev);
+    };
+
     const onSubmit = (data: any) => {
         const startDate = new Date(data.startDate);
         const endDate = new Date(data.startDate);
@@ -48,26 +73,18 @@ export function EditNewOneTimeActivityPage() {
         };
 
         const targetDay = dayMapping[frequencyDay];
-
-        // const activities: any[] = []; // this is the fix
-
-        const scheduleId = uuidv4();
         const currentDate = new Date(startDate);
         const activityDate = new Date(currentDate);
         activityDate.setHours(hour, minute, 0, 0);
 
-        activities.push({
-            ...data,
+        setActivities({
+            ...activities, ...data,
             startDate: activityDate.toISOString(),
             endDate: activityDate.toISOString(),
-            isOneTime: true,
-            dateCreated: new Date().toISOString(),
-            signUps: 0,
-            customers: [],
-            scheduleId,
+            frequencyDay: targetDay,
         });
-        fetch('http://localhost:3000/api/activities/add-new-scheduled-activity', {
-            method: 'POST',
+        fetch(`http://localhost:3000/api/activities/${activityId}`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -100,39 +117,82 @@ export function EditNewOneTimeActivityPage() {
                     </Typography>
                     <FormControl>
                         <form onSubmit={handleSubmit(onSubmit)}>
-    
-                            {/* Activity Name */}
-                            <TextField
-                                fullWidth
-                                label="Activity Name"
-                                {...register('name', { required: 'Activity name is required' })}
-    
-                                sx={{ mb: 2 }}
+
+                            <Controller
+                                name="name"
+                                control={control}
+                                defaultValue={activities.name}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        fullWidth
+                                        label="Activity Name"
+                                        onChange={(e) => {
+                                            field.onChange(e); // updates react-hook-form
+                                            handleActivityChange("name", e.target.value); // updates activities state
+                                        }}
+                                        sx={{ mb: 2 }}
+                                    />
+                                )}
                             />
                             {/* Activity Location */}
-                            <TextField
-                                fullWidth
-                                label="Activity Location"
-                                {...register('location', { required: 'Activity location is required' })}
-    
-                                sx={{ mb: 2 }}
+                            <Controller
+                                name="location"
+                                control={control}
+                                defaultValue={activities.location}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        fullWidth
+                                        label="Activity Location"
+                                        onChange={(e) => {
+                                            field.onChange(e);
+                                            handleActivityChange("location", e.target.value);
+                                        }}
+                                        sx={{ mb: 2 }}
+                                    />
+                                )}
                             />
+
                             {/* Activity Description */}
-                            <TextField
-                                fullWidth
-                                label="Activity Description"
-                                multiline
-                                rows={3}
-                                {...register('description', { required: 'Activity description is required' })}
-                                sx={{ mb: 2 }}
+                            <Controller
+                                name="description"
+                                control={control}
+                                defaultValue={activities.description}
+                                rules={{ required: 'Activity description is required' }}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        fullWidth
+                                        label="Activity Description"
+                                        multiline
+                                        rows={3}
+                                        onChange={(e) => {
+                                            field.onChange(e);
+                                            handleActivityChange("description", e.target.value);
+                                        }}
+                                        sx={{ mb: 2 }}
+                                    />
+                                )}
                             />
                             {/* Total Slots */}
-                            <TextField
-                                fullWidth
-                                label="Total Slots"
-                                type="number"
-                                {...register('totalSlots', { required: 'Total slots are required' })}
-                                sx={{ mb: 2 }}
+                            <Controller
+                                name="totalSlots"
+                                control={control}
+                                defaultValue={activities.totalSlots}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        fullWidth
+                                        label="Total Slots"
+                                        type="number"
+                                        onChange={(e) => {
+                                            field.onChange(e);
+                                            handleActivityChange("totalSlots", parseInt(e.target.value, 10));
+                                        }}
+                                        sx={{ mb: 2 }}
+                                    />
+                                )}
                             />
                             {/* Credit Cost - edit to make it a form? not sure if react recognises this as input */}
                             <Typography id="credit-cost-slider" gutterBottom>
@@ -141,7 +201,7 @@ export function EditNewOneTimeActivityPage() {
                             <Controller
                                 name="creditCost"
                                 control={control}
-                                defaultValue={5}
+                                defaultValue={activities.creditCost}
                                 render={({ field }) => (
                                     <Slider
                                         {...field}
@@ -151,40 +211,81 @@ export function EditNewOneTimeActivityPage() {
                                         marks
                                         min={1}
                                         max={15}
+                                        onChange={(e, value) => {
+                                            field.onChange(value);
+                                            handleActivityChange("creditCost", value as number);
+                                        }}
                                     />
                                 )}
                             />
                             {/* Activity Date */}
-                            <TextField
-                                fullWidth
-                                label="Activity Date"
-                                type="date"
-                                {...register('startDate', { required: 'Activity date is required' })}
-                                InputLabelProps={{ shrink: true }}
-                                sx={{ mb: 2 }}
+                            <Controller
+                                name="startDate"
+                                control={control}
+                                defaultValue={new Date(activities.startDate).toISOString().split('T')[0]}
+                                rules={{ required: 'Activity date is required' }}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        fullWidth
+                                        label="Activity Date"
+                                        type="date"
+                                        InputLabelProps={{ shrink: true }}
+                                        onChange={(e) => {
+                                            field.onChange(e);
+                                            handleActivityChange("startDate", e.target.value);
+                                        }}
+                                        sx={{ mb: 2 }}
+                                    />
+                                )}
                             />
                             {/* Activity Time */}
-                            <TextField
-                                fullWidth
-                                label="Start Time of Activity (HH:MM)"
-                                {...register('frequencyTime', { required: 'Activity time is required' })}
-                                sx={{ mb: 2 }}
+                            <Controller
+                                name="frequencyTime"
+                                control={control}
+                                defaultValue={activities.frequencyTime}
+                                rules={{ required: 'Activity time is required' }}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        fullWidth
+                                        label="Start Time of Activity (HH:MM)"
+                                        onChange={(e) => {
+                                            field.onChange(e);
+                                            handleActivityChange("frequencyTime", e.target.value);
+                                        }}
+                                        sx={{ mb: 2 }}
+                                    />
+                                )}
                             />
                             {/* Activity Duration */}
-                            <TextField
-                                fullWidth
-                                label="Activity Duration"
-                                type="number"
-                                {...register('duration', { required: 'Activity duration is required' })}
-                                sx={{ mb: 2 }}
+                            <Controller
+                                name="duration"
+                                control={control}
+                                defaultValue={activities.duration}
+                                rules={{ required: 'Activity duration is required' }}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        fullWidth
+                                        label="Activity Duration"
+                                        type="number"
+                                        onChange={(e) => {
+                                            const value = parseInt(e.target.value, 10);
+                                            field.onChange(value);
+                                            handleActivityChange("duration", value);
+                                        }}
+                                        sx={{ mb: 2 }}
+                                    />
+                                )}
                             />
-    
+
                             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                                 <Button variant="contained" color="primary" type="submit" sx={{ px: 4 }}>
-                                    Add Activity
+                                    Edit Activity
                                 </Button>
                             </Box>
-    
+
                             <Box sx={{ mt: 2 }}>
                                 <Typography variant="body2" color="textSecondary">
                                     {`Activity Created: ${new Date().toLocaleString()}`}

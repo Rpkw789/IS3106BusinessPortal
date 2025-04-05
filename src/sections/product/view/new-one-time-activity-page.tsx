@@ -48,6 +48,7 @@ export function NewOneTimeActivityPage() {
             signUps: 0,
             customers: [],
             scheduleId,
+            frequencyDay: targetDay,
         });
         fetch('http://localhost:3000/api/activities/add-new-scheduled-activity', {
             method: 'POST',
