@@ -1,19 +1,36 @@
 import { useForm, Controller } from 'react-hook-form';
 import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Snackbar, Alert, Slider } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { start } from 'repl';
+import { useParams } from 'react-router-dom';
 
 // ----------------------------------------------------------------------
 
-export function NewOneTimeActivityPage() {
+export function EditNewOneTimeActivityPage() {
     const { register, handleSubmit, control } = useForm();
     const Router = useRouter();
+    const { activityId } = useParams();
+    const [activities, setActivities] = useState<any[]>([]);
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+
+    useEffect(() => {
+        fetch(`http://localhost:3000/api/activities/${activityId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                setActivities(data);
+            });
+    }, [activityId]);
 
     const onSubmit = (data: any) => {
         const startDate = new Date(data.startDate);
@@ -32,7 +49,7 @@ export function NewOneTimeActivityPage() {
 
         const targetDay = dayMapping[frequencyDay];
 
-        const activities: any[] = []; // this is the fix
+        // const activities: any[] = []; // this is the fix
 
         const scheduleId = uuidv4();
         const currentDate = new Date(startDate);
@@ -76,10 +93,10 @@ export function NewOneTimeActivityPage() {
             <Card sx={{ mt: 4, p: 3, boxShadow: 5, borderRadius: 2 }}>
                 <CardContent>
                     <Typography variant="h4" fontWeight={600} gutterBottom>
-                        Add New One Time Activity
+                        Edit New One Time Activity
                     </Typography>
                     <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
-                        Fill in the details below to create a new one time activity.
+                        Change the details below to edit a new one time activity.
                     </Typography>
                     <FormControl>
                         <form onSubmit={handleSubmit(onSubmit)}>

@@ -23,6 +23,7 @@ export const NewOneTimeActivity = lazy(() => import('src/pages/add-new-one-time-
 export const ProductCustomerPage = lazy(() => import('src/pages/product-customers'));
 export const ProfilePage = lazy(() => import('src/pages/profile'));
 export const EditProfilePage = lazy(() => import('src/pages/edit-profile'));
+export const EditActivityPage = lazy(() => import('src/pages/edit-one-time-activity'));
 
 // ----------------------------------------------------------------------
 
@@ -58,6 +59,7 @@ export function Router() {
         { path: 'add-scheduled-activity', element: <NewScheduledActivity /> },
         { path: 'add-one-time-activity', element: <NewOneTimeActivity /> },
         { path: 'product/:activityId/customers', element: <ProductCustomerPage /> },
+        { path: 'edit-activity/:activityId', element: <EditActivityPage /> },
         { path: 'profile', element: <ProfilePage /> },
         { path: 'edit-profile', element: <EditProfilePage /> },
       ],
