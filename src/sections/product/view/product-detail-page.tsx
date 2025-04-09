@@ -1,22 +1,24 @@
-import { Container, Typography, Box, Button, Card, CardContent, Stack, Chip, Divider, Rating } from '@mui/material';
+import { Container, Alert, Snackbar, Typography, Box, Button, Card, CardContent, Stack, Chip, Divider, Rating } from '@mui/material';
 import { useRouter } from 'src/routes/hooks';
+import { ProductItemProps } from 'src/sections/product/product-item';
+import { useState } from 'react';
 
 function formatTimeRange(frequencyTime: string, duration: string) {
     // Split the frequencyTime into hours and minutes
     const [hours, minutes] = frequencyTime.split(':').map(Number);
-  
+
     // Create a date object using the current date and the provided time
     const startTime = new Date();
     startTime.setHours(hours, minutes, 0, 0); // Set start time with frequency time
-  
+
     // Calculate the end time by adding the duration (in hours) to the start time
     const endTime = new Date(startTime);
     endTime.setHours(endTime.getHours() + Number(duration));
-  
+
     // Format the start and end times as "HH:mm"
     const formattedStartTime = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const formattedEndTime = endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  
+
     return `${formattedStartTime} - ${formattedEndTime}`;
 }
 
@@ -25,10 +27,50 @@ function formatDate(dateString: string) {
     return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-export function ProductDetailPage({ activity }: { activity : any }) {
+export function ProductDetailPage({ product }: { product: ProductItemProps }) {
     const router = useRouter();
 
-    console.log('Activity Detail Page:', activity);
+    const data = {
+        name: 'Yoga Classes',
+        day: 'Monday',
+        time: '10:00 AM - 11:00 AM',
+        location: 'Anytime Fitness',
+        creditcost: 5,
+        status: 'Upcoming',
+        description: 'Join our Yoga classes for a relaxing and rejuvenating experience. Suitable for all levels.',
+        isOneTime: true,
+        totalSlots: 20,
+        signUps: 10,
+        rating: 4.5,
+        imageUrl: '/assets/images/products/product_1.jpg',
+    };
+
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+
+    const onDelete = () => {
+        fetch(`http://localhost:3000/api/activities/${product._id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        })
+            .then((response) => response.json())
+            .then((rawdata) => {
+                if (rawdata.status === "success") {
+                    setSnackbarMessage(rawdata.message);
+                    setSnackbarSeverity("success");
+                    setOpenSnackbar(true);
+                    router.push('/activities');
+                } else {
+                    setSnackbarMessage(rawdata.message);
+                    setSnackbarSeverity("error");
+                    setOpenSnackbar(true);
+                }
+            })
+    };
 
     return (
         <Container maxWidth="md">
@@ -59,15 +101,25 @@ export function ProductDetailPage({ activity }: { activity : any }) {
                         <Button variant="contained" color="secondary" onClick={() => router.push(`/activities/${activity._id}/customers`)}>
                             View Customers
                         </Button>
-                        <Button variant="contained" color="primary">
+                        <Button variant="contained" color="primary" onClick={() => router.push(`/edit-activity/${product._id}`)}>
                             Edit Activity
                         </Button>
-                        <Button variant="contained" color="error">
+                        <Button variant="contained" color="error" onClick={onDelete}>
                             Delete Activity
                         </Button>
                     </Box>
                 </CardContent>
             </Card>
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={3000}
+                onClose={() => setOpenSnackbar(false)}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert severity={snackbarSeverity} onClose={() => setOpenSnackbar(false)}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 }

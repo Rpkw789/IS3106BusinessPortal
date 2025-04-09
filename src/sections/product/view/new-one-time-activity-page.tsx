@@ -42,6 +42,7 @@ export function NewOneTimeActivityPage() {
         activities.push({
             ...data,
             startDate: activityDate.toISOString(),
+            endDate: activityDate.toISOString(),
             isOneTime: true,
             dateCreated: new Date().toISOString(),
             signUps: 0,
@@ -49,6 +50,7 @@ export function NewOneTimeActivityPage() {
             scheduleId,
             rating: 0,
             isComplete: false,
+            frequencyDay: targetDay,
         });
         fetch('http://localhost:3000/api/activities/add-new-scheduled-activity', {
             method: 'POST',
