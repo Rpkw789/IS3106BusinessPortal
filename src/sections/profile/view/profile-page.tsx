@@ -1,56 +1,249 @@
-import { Card, CardContent, CardHeader, Avatar, Typography, Button, Grid } from "@mui/material";
-import { useRouter } from "src/routes/hooks";
+import { Card, CardContent, CardHeader, Avatar, Typography, Button, Grid, TextField } from "@mui/material";
+import { useCallback, useEffect, useState } from "react";
+import EditIconSVG from "src/components/editIconSVG";
+import Api from "src/helpers/Api";
 
 export type ProfileViewProps = {
   profile: Profile;
+  setProfileChanged: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export type Profile = {
   _id: string;
   name: string;
+  address: string;
+  isOperational: boolean;
+  status: boolean;
+  entityType: string;
+  businessType: string;
+  businessDescription: string;
+  phone: string;
+  website: string;
   email: string;
   password: string;
-  phone: string;
-  address: string;
   profileImage: string;
   created: string;
 };
 
-export function ProfileView({profile} : ProfileViewProps) {
-  const router = useRouter();
+export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
+  const [updateData, setUpdateData] = useState({});
+  const [isEditPage, setEditPage] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+
+  useEffect(() => {
+
+  }, []);
+
+  const insertUpdateData = (attributeName: string, value: any) => {
+    setUpdateData((prev) => ({ ...prev, [attributeName]: value }));
+  }
+
+  const handleSaveDetail = () => {
+    console.log("updateData", updateData);
+    Api.updateBusinessProfile(updateData, profileImage, profile._id).then((res) => {
+      if (res.status === 404) {
+        throw new Error("Unauthorized");
+      }
+      setProfileChanged((prev) => !prev);
+    }).catch((error) => {
+      console.error(error.message);
+      alert(error.message); // Optionally show an alert to the user
+    });
+  }
+
+  const handleDisableAccount = () => {
+    // Disable account
+  }
+
+  const changeProfilePicture = () => {
+    // Change profile picture
+  }
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setProfileImage(file);
+    // Create a URL for preview
+    const imageUrl = URL.createObjectURL(file);
+    setSelectedImage(imageUrl);
+
+    // Here, you can also upload the image to an API
+
+  };
 
   return (
-    <Grid container justifyContent="center" sx={{ mt: 4 }}>
-      <Grid item xs={12} sm={8} md={6}>
-        <Card sx={{ p: 3, borderRadius: 3, boxShadow: 3 }}>
-          {/* Profile Header */}
-          <CardHeader
-            avatar={<Avatar src={`http://localhost:3000/${profile.profileImage}` || "/default-profile.png"} sx={{ width: 80, height: 80 }} />}
-            title={<Typography variant="h5">{profile.name}</Typography>}
-            subheader={<Typography variant="body2" color="text.secondary">{profile.email}</Typography>}
-          />
+    <Card style={{ margin: 20 }}>
+      <div style={{ width: 908, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+        <div style={{ width: '100%', padding: 16, display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ width: 288, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ color: '#121417', fontSize: 32, fontWeight: '700', lineHeight: '40px' }}>Business Profile</div>
+          </div>
+        </div>
+        <div style={{ width: '100%', padding: 16, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ color: '#121417', fontSize: 18, fontWeight: '700' }}>Business Profile</div>
+        </div>
+        <div style={{ width: '100%', padding: 16, display: 'flex' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', gap: 16 }}>
+              <div style={{ position: 'relative', width: 128, height: 128, backgroundColor: '#ccc', borderRadius: 12 }}>
+                <img src={selectedImage || `http://localhost:3000/${profile.profileImage}`} alt="Business Avatar" style={{ width: '100%', height: '100%', borderRadius: 12, objectFit: "cover" }} />
+                {isEditPage && (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    style={{ position: 'absolute', bottom: 8, right: 8, padding: 4, minWidth: 'auto', borderRadius: '50%' }}
+                    onClick={changeProfilePicture}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ position: "absolute", opacity: 0, width: "100%", height: "100%", cursor: "pointer" }}
+                      onChange={handleImageChange}
+                    />
+                    <EditIconSVG />
+                  </Button>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontSize: 22, fontWeight: '700' }}>{profile.name}</div>
+                {isEditPage ? (<></>) : (<div style={{ fontSize: 16, color: '#617A8A' }}>{profile.address}</div>)}
+                {isEditPage ? (<div>
+                  <TextField
+                    fullWidth
+                    name="businessType"
+                    label="Business Type"
+                    defaultValue={profile.businessType}
+                    InputLabelProps={{ shrink: true }}
+                    sx={{ mb: 3, mt: 1 }}
+                    onChange={(e) => insertUpdateData("businessType", e.target.value)}
+                  />
+                </div>) : (<div style={{ fontSize: 16, color: '#617A8A' }}>{profile.businessType}</div>)}
 
-          <CardContent>
-            {/* Business Details */}
-            <Typography variant="body1" sx={{ mt: 1 }}>
-              📞 {profile.phone}
-            </Typography>
-            <Typography variant="body1" sx={{ mt: 1 }}>
-              📍 {profile.address}
-            </Typography>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style={{ width: '100%', padding: 16, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ color: '#121417', fontSize: 18, fontWeight: '700' }}>Business Details</div>
+        </div>
+        <div style={{ width: '100%', padding: 16, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', borderTop: '1px solid #E5E8EB', padding: 16 }}>
+            <div style={{ flex: 1, paddingRight: 16 }}>
+              <div style={{ fontSize: 14, color: '#617A8A' }}>Business name</div>
+              {isEditPage ? (<div>
+                <TextField
+                  fullWidth
+                  name="name"
+                  label=""
+                  defaultValue={profile.name}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ mb: 3, mt: 1 }}
+                  onChange={(e) => insertUpdateData("name", e.target.value)}
+                />
+              </div>) : (<div style={{ fontSize: 14 }}>{profile.name}</div>)}
 
-            {/* Edit Profile Button */}
-            <Button
-              variant="contained"
-              startIcon={<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.878.343a.5.5 0 0 1 .121.354v2.5a.5.5 0 0 1-.146.354l-1.5 1.5a.5.5 0 0 1-.708 0L12.5 3.207l-2-2L13.793.343a.5.5 0 0 1 .085-.085zM11.207 2l2-2L14 .293l-2 2L11.207 2z"/><path fillRule="evenodd" d="M1.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v10a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5V4zm1 .5v9h9v-9H2z"/></svg>}
-              sx={{ mt: 3 }}
-              onClick={() => router.push("/edit-profile")}
-            >
-              Edit Profile
-            </Button>
-          </CardContent>
-        </Card>
-      </Grid>
-    </Grid>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, color: '#617A8A' }}>Business address</div>
+              {isEditPage ? (<div>
+                <TextField
+                  fullWidth
+                  name="address"
+                  label=""
+                  defaultValue={profile.address}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ mb: 3, mt: 1 }}
+                  onChange={(e) => insertUpdateData("address", e.target.value)}
+                />
+              </div>) : (<div style={{ fontSize: 14 }}>{profile.address}</div>)}
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E5E8EB', padding: 16 }}>
+            <div style={{ flex: 1, paddingRight: 16 }}>
+              <div style={{ fontSize: 14, color: '#617A8A' }}>Business phone number</div>
+              {isEditPage ? (<div>
+                <TextField
+                  fullWidth
+                  name="phoneNumber"
+                  label=""
+                  defaultValue={profile.phone}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ mb: 3, mt: 1 }}
+                  onChange={(e) => insertUpdateData("phoneNumber", e.target.value)}
+                />
+              </div>) : (<div style={{ fontSize: 14 }}>{profile.phone}</div>)}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, color: '#617A8A' }}>Website</div>
+              {isEditPage ? (<div>
+                <TextField
+                  fullWidth
+                  name="website"
+                  label=""
+                  defaultValue={profile.website}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ mb: 3, mt: 1 }}
+                  onChange={(e) => insertUpdateData("website", e.target.value)}
+                />
+              </div>) : (<div style={{ fontSize: 14 }}>
+                <a href={`https://${profile.website}`} target="_blank" rel="noopener noreferrer">{profile.website}</a></div>)}
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E5E8EB', padding: 16 }}>
+            <div style={{ flex: 1, paddingRight: 16 }}>
+              <div style={{ fontSize: 14, color: '#617A8A' }}>Email</div>
+              {isEditPage ? (<div>
+                <TextField
+                  fullWidth
+                  name="email"
+                  label=""
+                  defaultValue={profile.email}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ mb: 3, mt: 1 }}
+                  onChange={(e) => insertUpdateData("email", e.target.value)}
+                />
+              </div>) : (<div style={{ fontSize: 14 }}>{profile.email}</div>)}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, color: '#617A8A' }}>Password</div>
+              {isEditPage ? (<div>
+                <TextField
+                  fullWidth
+                  name="password"
+                  label=""
+                  defaultValue={profile.password}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ mb: 3, mt: 1 }}
+                  onChange={(e) => insertUpdateData("password", e.target.value)}
+                />
+              </div>) : (<div style={{ fontSize: 14 }}>{profile.password}</div>)}
+            </div>
+          </div>
+        </div>
+        <div style={{ width: '100%', padding: 16, display: 'flex', gap: 15 }}>
+          {!isEditPage ? (
+            <>
+              <Button onClick={() => setEditPage(true)} variant="contained" color="primary" style={{ padding: '12px 24px', borderRadius: 8, textTransform: 'none' }}>
+                <div style={{ fontSize: 14, fontWeight: '700' }}>Edit Business Details</div>
+              </Button>
+              <Button onClick={handleDisableAccount} variant="contained" color="secondary" style={{ padding: '12px 24px', borderRadius: 8, textTransform: 'none' }}>
+                <div style={{ fontSize: 14, fontWeight: '700' }}>Disable Account</div>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button onClick={() => { setEditPage(false); handleSaveDetail() }} variant="contained" color="primary" style={{ padding: '12px 24px', borderRadius: 8, textTransform: 'none' }}>
+                <div style={{ fontSize: 14, fontWeight: '700' }}>Save Details</div>
+              </Button>
+              <Button onClick={() => setEditPage(false)} variant="contained" color="secondary" style={{ padding: '12px 24px', borderRadius: 8, textTransform: 'none' }}>
+                <div style={{ fontSize: 14, fontWeight: '700' }}>Cancel</div>
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    </Card>
   );
 }

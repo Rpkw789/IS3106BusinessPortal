@@ -4,13 +4,13 @@ import {
 } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
 import { MdPhotoCamera } from "react-icons/md";
-import { ProfileViewProps } from "./profile-page";
+import { Profile, ProfileViewProps } from "./profile-page";
 
 
-export function EditProfileView({ profile }: ProfileViewProps) {
+export function EditProfileView(profile: any) {
 	const router = useRouter();
 	const [formData, setFormData] = useState(profile);
-	const [image, setImage] = useState(profile.profileImage || "/default-profile.png");
+	const [image, setImage] = useState("/default-profile.png");
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
 	const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -37,11 +37,11 @@ export function EditProfileView({ profile }: ProfileViewProps) {
 	// Handle Form Submission
 	const handleSubmit = () => {
 		const formDataToSend = new FormData();
-		Object.entries(formData).forEach(([key, value]) => {
-			if (key !== 'profileImage') { // avoid appending profileImage directly
-				formDataToSend.append(key, value);
-			}
-		});
+		// Object.entries(formData).forEach(([key, value]) => {
+		// 	if (key !== 'profileImage') { // avoid appending profileImage directly
+		// 		formDataToSend.append(key, value);
+		// 	}
+		// });
 
 		// Append the profile image to FormData
 		formDataToSend.append("profileImage", image);
@@ -53,7 +53,7 @@ export function EditProfileView({ profile }: ProfileViewProps) {
 
 		fetch("http://localhost:3000/api/businesses/editProfile", {
 			method: "PUT",
-			
+
 			body: formDataToSend,
 			headers: {
 				"Authorization": `Bearer ${localStorage.getItem("token")}`,
