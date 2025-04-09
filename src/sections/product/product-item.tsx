@@ -28,6 +28,11 @@ export type ProductItemProps = {
   creditCost: number;
   frequencyTime: string;
   duration: string;
+  isComplete: boolean;
+  startDate: string;
+  endDate: string;
+  rating: number;
+  createdAt: string;
 };
 
 export function ProductItem({ product }: { product: ProductItemProps }) {

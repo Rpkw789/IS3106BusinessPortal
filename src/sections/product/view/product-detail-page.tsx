@@ -30,20 +30,8 @@ function formatDate(dateString: string) {
 export function ProductDetailPage({ product }: { product: ProductItemProps }) {
     const router = useRouter();
 
-    const data = {
-        name: 'Yoga Classes',
-        day: 'Monday',
-        time: '10:00 AM - 11:00 AM',
-        location: 'Anytime Fitness',
-        creditcost: 5,
-        status: 'Upcoming',
-        description: 'Join our Yoga classes for a relaxing and rejuvenating experience. Suitable for all levels.',
-        isOneTime: true,
-        totalSlots: 20,
-        signUps: 10,
-        rating: 4.5,
-        imageUrl: '/assets/images/products/product_1.jpg',
-    };
+    const [activity, setActivity] = useState<ProductItemProps>(product);
+    console.log(activity);
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -94,7 +82,7 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
                         <Divider sx={{ my: 1 }} />
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography variant="body1"><strong>Rating:</strong></Typography>
-                            <Rating value={activity.rating} precision={0.5} readOnly />
+                            <Rating value={ activity.rating } precision={0.5} readOnly />
                         </Box>
                     </Stack>
                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
