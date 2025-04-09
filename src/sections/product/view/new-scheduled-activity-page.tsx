@@ -45,6 +45,8 @@ export function NewScheduledActivityPage() {
                     dateCreated: new Date().toISOString(),
                     signUps: 0,
                     customers: [],
+                    rating: 0,
+                    isComplete: false,
                 });
             }
             // Move to the next day

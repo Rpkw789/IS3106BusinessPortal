@@ -1,7 +1,5 @@
 import { Container, Typography, Box, Button, Card, CardContent, Stack, Chip, Divider, Rating } from '@mui/material';
 import { useRouter } from 'src/routes/hooks';
-import { ProductItemProps } from 'src/sections/product/product-item';
-
 
 function formatTimeRange(frequencyTime: string, duration: string) {
     // Split the frequencyTime into hours and minutes
@@ -22,51 +20,43 @@ function formatTimeRange(frequencyTime: string, duration: string) {
     return `${formattedStartTime} - ${formattedEndTime}`;
 }
 
+function formatDate(dateString: string) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+}
 
-export function ProductDetailPage({ product }: { product: ProductItemProps }) {
+export function ProductDetailPage({ activity }: { activity : any }) {
     const router = useRouter();
-    
-    const data = {
-        name: 'Yoga Classes',
-        day: 'Monday',
-        time: '10:00 AM - 11:00 AM',
-        location: 'Anytime Fitness',
-        creditcost: 5,
-        status: 'Upcoming',
-        description: 'Join our Yoga classes for a relaxing and rejuvenating experience. Suitable for all levels.',
-        isOneTime: true,
-        totalSlots: 20,
-        signUps: 10,
-        rating: 4.5,
-        imageUrl: '/assets/images/products/product_1.jpg',
-    };
 
-    console.log('Product Detail Page:', product);
+    console.log('Activity Detail Page:', activity);
 
     return (
         <Container maxWidth="md">
             <Card sx={{ mt: 4, p: 3, boxShadow: 5, borderRadius: 2 }}>
                 <CardContent>
                     <Typography variant="h4" fontWeight={600} gutterBottom>
-                        {product.name}
+                        {activity.name}
                     </Typography>
                     <Stack spacing={2} sx={{ mb: 3 }}>
-                        <Chip label={data.status} color={data.status === 'Upcoming' ? 'primary' : 'secondary'} sx={{ alignSelf: 'flex-start' }} />
-                        <Typography variant="body1"><strong>Day:</strong> {data.day}</Typography>
-                        <Typography variant="body1"><strong>Time:</strong> {formatTimeRange(product.frequencyTime, product.duration)}</Typography>
-                        <Typography variant="body1"><strong>Location:</strong> {product.location}</Typography>
-                        <Typography variant="body1"><strong>Credit Cost:</strong> {product.creditCost}</Typography>
-                        <Typography variant="body1"><strong>Total Slots:</strong> {product.totalSlots} (Signed Up: {product.signUps})</Typography>
-                        <Typography variant="body1"><strong>One-Time Event:</strong> {product.isOneTime ? 'Yes' : 'No'}</Typography>
-                        <Typography variant="body1"><strong>Description:</strong> {product.description}</Typography>
+                        <Chip
+                        label={activity.isComplete ? 'Completed' : 'Upcoming'}
+                        color={activity.isComplete ? 'secondary' : 'primary'}
+                        sx={{ alignSelf: 'flex-start' }}
+                        />
+                        <Typography variant="body1"><strong>Day:</strong> {formatDate(activity.startDate)}</Typography>
+                        <Typography variant="body1"><strong>Time:</strong> {formatTimeRange(activity.frequencyTime, activity.duration)}</Typography>
+                        <Typography variant="body1"><strong>Location:</strong> {activity.location}</Typography>
+                        <Typography variant="body1"><strong>Credit Cost:</strong> {activity.creditCost}</Typography>
+                        <Typography variant="body1"><strong>Total Slots:</strong> {activity.totalSlots} (Signed Up: {activity.signUps})</Typography>
+                        <Typography variant="body1"><strong>Description:</strong> {activity.description}</Typography>
                         <Divider sx={{ my: 1 }} />
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography variant="body1"><strong>Rating:</strong></Typography>
-                            <Rating value={data.rating} precision={0.5} readOnly />
+                            <Rating value={activity.rating} precision={0.5} readOnly />
                         </Box>
                     </Stack>
                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-                        <Button variant="contained" color="secondary" onClick={() => router.push(`/product/${product._id}/customers`)}>
+                        <Button variant="contained" color="secondary" onClick={() => router.push(`/activities/${activity._id}/customers`)}>
                             View Customers
                         </Button>
                         <Button variant="contained" color="primary">

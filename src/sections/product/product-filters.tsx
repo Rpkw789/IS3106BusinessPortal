@@ -146,26 +146,6 @@ export function ProductFilters({
     </Stack>
   );  
 
-  // const renderDateFilter = (
-  //   <LocalizationProvider dateAdapter={AdapterDateFns}>
-  //     <Stack spacing={1}>
-  //       <Typography variant="subtitle2">Select Date Range</Typography>
-  //       <DesktopDatePicker
-  //         label="Start Date"
-  //         value={filters.dateRange[0]}
-  //         onChange={(newDate) => onSetFilters({ dateRange: [newDate, filters.dateRange[1]] })}
-  //       />
-  //       <DatePicker
-  //         label="End Date"
-  //         value={filters.dateRange[1]}
-  //         onChange={(newDate) => onSetFilters({ dateRange: [filters.dateRange[0], newDate] })}
-  //         renderInput={(params) => <TextField {...params} fullWidth />}
-  //       />
-  //     </Stack>
-  //   </LocalizationProvider>
-  // );
-  
-
   return (
     <>
       <Button
@@ -213,7 +193,6 @@ export function ProductFilters({
             {renderCreditRange}
             {renderStatusFilter}
             {renderVacanciesFilter}
-            {/* {renderDateFilter} */}
           </Stack>
         </Scrollbar>
       </Drawer>
