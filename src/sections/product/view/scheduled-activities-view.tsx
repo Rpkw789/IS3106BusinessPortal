@@ -26,7 +26,6 @@ const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
   { value: 'upcoming', label: 'Upcoming' },
   { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
 ];
 
 const defaultFilters = {
@@ -34,7 +33,6 @@ const defaultFilters = {
   creditRange: [0, 15],
   status: STATUS_OPTIONS[0].value,
   vacanciesRange: [0, 100],
-  // dateRange: [null, null],
 };
 
 export function ScheduledActivitiesView() {
@@ -71,8 +69,21 @@ export function ScheduledActivitiesView() {
 
   useEffect(() => {
     const fetchScheduledActivities = async () => {
+      const { creditRange, vacanciesRange, rating, status } = filters;
+
+      const queryParams = new URLSearchParams({
+        isOneTime: 'false',
+        minCredit: String(creditRange[0]),
+        maxCredit: String(creditRange[1]),
+        minVacancy: String(vacanciesRange[0]),
+        maxVacancy: String(vacanciesRange[1]),
+        rating,
+        status,
+        sortBy,
+      });
+
       try {
-        const response = await fetch(`http://localhost:3000/api/activities/all-business-activities?isOneTime=false`, {
+        const response = await fetch(`http://localhost:3000/api/activities/all-business-activities?${queryParams.toString()}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -89,7 +100,7 @@ export function ScheduledActivitiesView() {
     };
   
     fetchScheduledActivities();
-  }, []);
+  }, [ filters, sortBy ]);
 
   return (
     <DashboardContent>

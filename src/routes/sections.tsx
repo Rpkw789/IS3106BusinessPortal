@@ -55,7 +55,7 @@ export function Router() {
         { path: 'bookings', element: <UserPage /> },
         { path: 'activities', element: <ActivitiesPage /> },
         { path: 'blog', element: <BlogPage /> },
-        { path: 'product/:productId', element: <ProductsDetailsPage /> },
+        { path: 'activities/:productId', element: <ProductsDetailsPage /> },
         { path: 'add-scheduled-activity', element: <NewScheduledActivity /> },
         { path: 'add-one-time-activity', element: <NewOneTimeActivity /> },
         { path: 'product/:activityId/customers', element: <ProductCustomerPage /> },

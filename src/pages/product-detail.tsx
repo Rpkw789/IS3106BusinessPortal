@@ -52,7 +52,7 @@ export default function Page() {
         <title> {`Products - ${CONFIG.appName}`}</title>
       </Helmet>
 
-      <ProductDetailPage product={product}/>
+      <ProductDetailPage activity={product}/>
     </>
   );
 }

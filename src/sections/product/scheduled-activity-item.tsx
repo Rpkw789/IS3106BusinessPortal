@@ -63,7 +63,7 @@ export function ScheduledActivityItem({ activity }: { activity:  any}) {
 
     return (
         <Card
-            onClick={() => router.push(`/product/${activity._id}`)}
+            onClick={() => router.push(`/activities/${activity._id}`)}
             sx={{ cursor: 'pointer', position: 'relative' }}
         >
             {/* {renderImg} */}
