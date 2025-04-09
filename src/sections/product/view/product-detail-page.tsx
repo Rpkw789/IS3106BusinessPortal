@@ -1,7 +1,7 @@
 import { Container, Alert, Snackbar, Typography, Box, Button, Card, CardContent, Stack, Chip, Divider, Rating } from '@mui/material';
 import { useRouter } from 'src/routes/hooks';
 import { ProductItemProps } from 'src/sections/product/product-item';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function formatTimeRange(frequencyTime: string, duration: string) {
     // Split the frequencyTime into hours and minutes
@@ -37,6 +37,16 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
+    useEffect(() => {
+        const handleIsCompleteChange = () => {
+            const activityEndDate = new Date(activity.startDate);
+            const currentDate = new Date();
+            const isComplete = activityEndDate < currentDate;
+            setActivity((prevActivity) => ({ ...prevActivity, isComplete }));
+        }
+        handleIsCompleteChange();
+    }, [activity.startDate]);
+
     const onDelete = () => {
         fetch(`http://localhost:3000/api/activities/${product._id}`, {
             method: 'DELETE',
@@ -70,7 +80,7 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
                     <Stack spacing={2} sx={{ mb: 3 }}>
                         <Chip
                         label={activity.isComplete ? 'Completed' : 'Upcoming'}
-                        color={activity.isComplete ? 'secondary' : 'primary'}
+                        color={activity.isComplete ? 'success' : 'warning'}
                         sx={{ alignSelf: 'flex-start' }}
                         />
                         <Typography variant="body1"><strong>Day:</strong> {formatDate(activity.startDate)}</Typography>
