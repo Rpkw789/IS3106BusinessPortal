@@ -1,5 +1,6 @@
-import { Card, CardContent, CardHeader, Avatar, Typography, Button, Grid, TextField } from "@mui/material";
+import { Card, CardContent, CardHeader, Avatar, Typography, Button, Grid, TextField, Select, MenuItem, SelectChangeEvent } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
+import { set } from "react-hook-form";
 import EditIconSVG from "src/components/editIconSVG";
 import Api from "src/helpers/Api";
 
@@ -9,19 +10,19 @@ export type ProfileViewProps = {
 };
 
 export type Profile = {
-  _id: string;
-  name: string;
-  address: string;
+  _id: string; //
+  name: string; //
+  address: string; //
   isOperational: boolean;
   status: boolean;
-  entityType: string;
-  businessType: string;
+  entityType: string; //
+  businessType: string; //
   businessDescription: string;
-  phone: string;
-  website: string;
-  email: string;
-  password: string;
-  profileImage: string;
+  phone: string; //
+  website: string; //
+  email: string; //
+  password: string; //
+  profileImage: string; //
   created: string;
 };
 
@@ -30,6 +31,7 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
   const [isEditPage, setEditPage] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [isOperational, setIsOperational] = useState(profile.isOperational);
 
   useEffect(() => {
 
@@ -59,6 +61,11 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
   const changeProfilePicture = () => {
     // Change profile picture
   }
+
+  const handleOperationalChange = (event: SelectChangeEvent) => {
+    setIsOperational(event.target.value === "Running");
+    insertUpdateData("isOperational", event.target.value === "Running");
+  };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -126,9 +133,35 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
           </div>
         </div>
         <div style={{ width: '100%', padding: 16, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ color: '#121417', fontSize: 18, fontWeight: '700' }}>Description</div>
+          {isEditPage ? (<div>
+            <TextField
+              multiline
+              maxRows={10}
+              fullWidth
+              name="businessDescription"
+              label=""
+              defaultValue={profile.businessDescription}
+              InputLabelProps={{ shrink: true }}
+              sx={{ mb: 3, mt: 1 }}
+              onChange={(e) => insertUpdateData("businessDescription", e.target.value)}
+            />
+          </div>) : (<div style={{ fontSize: 14 }}>{profile.businessDescription}</div>)}
+        </div>
+        <div style={{ width: '100%', padding: 16, display: 'flex', flexDirection: 'column' }}>
           <div style={{ color: '#121417', fontSize: 18, fontWeight: '700' }}>Business Details</div>
         </div>
         <div style={{ width: '100%', padding: 16, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', borderTop: '1px solid #E5E8EB', padding: 16 }}>
+            <div style={{ flex: 1, paddingRight: 16 }}>
+              <div style={{ fontSize: 14, color: '#617A8A' }}>Account Creation Date</div>
+              <div style={{ fontSize: 14 }}>{profile.created.substring(0, 10)}</div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, color: '#617A8A' }}>Status</div>
+              <div style={{ fontSize: 14 }}>{profile.status ? "Valid" : "Invalid"}</div>
+            </div>
+          </div>
           <div style={{ display: 'flex', borderTop: '1px solid #E5E8EB', padding: 16 }}>
             <div style={{ flex: 1, paddingRight: 16 }}>
               <div style={{ fontSize: 14, color: '#617A8A' }}>Business name</div>
@@ -166,12 +199,12 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
               {isEditPage ? (<div>
                 <TextField
                   fullWidth
-                  name="phoneNumber"
+                  name="phone"
                   label=""
                   defaultValue={profile.phone}
                   InputLabelProps={{ shrink: true }}
                   sx={{ mb: 3, mt: 1 }}
-                  onChange={(e) => insertUpdateData("phoneNumber", e.target.value)}
+                  onChange={(e) => insertUpdateData("phone", e.target.value)}
                 />
               </div>) : (<div style={{ fontSize: 14 }}>{profile.phone}</div>)}
             </div>
@@ -221,6 +254,23 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
               </div>) : (<div style={{ fontSize: 14 }}>{profile.password}</div>)}
             </div>
           </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E5E8EB', padding: 16 }}>
+            <div style={{ flex: 1, paddingRight: 16 }}>
+              <div style={{ fontSize: 14, color: '#617A8A' }}>Operational Status</div>
+              {isEditPage ? (<div>
+                <Select
+                  labelId="demo-select-small-label"
+                  id="demo-select-small"
+                  value={isOperational ? "Running" : "Permanently Closed"}
+                  label="Operational Status"
+                  onChange={handleOperationalChange}
+                >
+                  <MenuItem value="Running">Running</MenuItem>
+                  <MenuItem value="Permanently Closed">Permanently Closed</MenuItem>
+                </Select>
+              </div>) : (<div style={{ fontSize: 14 }}>{profile.isOperational ? "Running" : "Permanently Closed"}</div>)}
+            </div>
+          </div>
         </div>
         <div style={{ width: '100%', padding: 16, display: 'flex', gap: 15 }}>
           {!isEditPage ? (
@@ -228,16 +278,17 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
               <Button onClick={() => setEditPage(true)} variant="contained" color="primary" style={{ padding: '12px 24px', borderRadius: 8, textTransform: 'none' }}>
                 <div style={{ fontSize: 14, fontWeight: '700' }}>Edit Business Details</div>
               </Button>
+              {/*
               <Button onClick={handleDisableAccount} variant="contained" color="secondary" style={{ padding: '12px 24px', borderRadius: 8, textTransform: 'none' }}>
                 <div style={{ fontSize: 14, fontWeight: '700' }}>Disable Account</div>
-              </Button>
+              </Button> */}
             </>
           ) : (
             <>
               <Button onClick={() => { setEditPage(false); handleSaveDetail() }} variant="contained" color="primary" style={{ padding: '12px 24px', borderRadius: 8, textTransform: 'none' }}>
                 <div style={{ fontSize: 14, fontWeight: '700' }}>Save Details</div>
               </Button>
-              <Button onClick={() => setEditPage(false)} variant="contained" color="secondary" style={{ padding: '12px 24px', borderRadius: 8, textTransform: 'none' }}>
+              <Button onClick={() => { setEditPage(false); setIsOperational(profile.isOperational); }} variant="contained" color="secondary" style={{ padding: '12px 24px', borderRadius: 8, textTransform: 'none' }}>
                 <div style={{ fontSize: 14, fontWeight: '700' }}>Cancel</div>
               </Button>
             </>
