@@ -5,6 +5,8 @@ import { useRouter } from "src/routes/hooks";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [profileChanged, setProfileChanged] = useState<boolean>(false);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -21,6 +23,7 @@ export default function ProfilePage() {
       })
       .then((data) => {
         if (data.status === "success") {
+          console.log("Fetched Profile Data:", data);
           setProfile(data.business);
         } else {
           console.error(data.message);
@@ -31,7 +34,7 @@ export default function ProfilePage() {
         console.error("Error:", error);
         router.push("/sign-in");
       });
-  }, [router]);
+  }, [router, profileChanged]);
 
   if (!profile) {
     return null; // Render nothing while redirecting
@@ -42,7 +45,7 @@ export default function ProfilePage() {
       <Helmet>
         <title>Business Profile - {profile.name}</title>
       </Helmet>
-      <ProfileView profile={profile} />
+      <ProfileView profile={profile} setProfileChanged={setProfileChanged} />
     </>
   );
 }
