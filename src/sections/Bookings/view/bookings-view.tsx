@@ -34,8 +34,15 @@ export function UserView() {
   const [status, filterStatus] = useState('all');
   const [bookings, setBookings] = useState<BookingProp[]>([]);
 
-  fetch('http://localhost:3000/api/bookings/biz/65c345678901abcd12345678')
-    .then((response) => response.json())
+  fetch('http://localhost:3000/api/bookings/biz',
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    }
+  ).then((response) => response.json())
     .then((data) => {
       setBookings(data);
     })

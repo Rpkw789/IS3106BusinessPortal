@@ -12,6 +12,7 @@ type TableNoDataProps = TableRowProps & {
 };
 
 export function TableNoData({ searchQuery, ...other }: TableNoDataProps) {
+  const month = searchQuery.split('=')[1];
   return (
     <TableRow {...other}>
       <TableCell align="center" colSpan={7}>
@@ -22,8 +23,7 @@ export function TableNoData({ searchQuery, ...other }: TableNoDataProps) {
 
           <Typography variant="body2">
             No results found for &nbsp;
-            <strong>&quot;{searchQuery}&quot;</strong>.
-            <br /> Try checking for typos or using complete words.
+            <strong>&quot;{month}&quot;</strong>.
           </Typography>
         </Box>
       </TableCell>

@@ -1,6 +1,8 @@
 import { Helmet } from 'react-helmet-async';
 
 import { CONFIG } from 'src/config-global';
+import Api from 'src/helpers/Api';
+import { useEffect, useState } from 'react';
 
 import { OverviewAnalyticsView } from 'src/sections/overview/view';
 
@@ -18,7 +20,7 @@ export default function Page() {
         <meta name="keywords" content="react,material,kit,application,dashboard,admin,template" />
       </Helmet>
 
-      <OverviewAnalyticsView />
+      <OverviewAnalyticsView/>
     </>
   );
 }

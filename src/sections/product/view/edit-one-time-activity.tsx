@@ -270,6 +270,7 @@ export function EditNewOneTimeActivityPage() {
                                         fullWidth
                                         label="Activity Duration"
                                         type="number"
+                                        inputProps={{ step: "0.01", min: "0" }}
                                         onChange={(e) => {
                                             const value = parseInt(e.target.value, 10);
                                             field.onChange(value);

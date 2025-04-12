@@ -8,8 +8,6 @@ const Api = {
             formData.append(key, updateData[key]);
         });
 
-        console.log(localStorage.getItem("accesstoken"));
-
         return fetch(`${address}/api/businesses/editProfile/${businessId}`, {
             headers: {
                 "authorization": `Bearer ${localStorage.getItem("token")}`,
@@ -18,6 +16,14 @@ const Api = {
             body: formData
         });
     },
+    getProfile() {
+        return fetch(`${address}/api/businesses/profile`, {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+            method: "GET"
+        });
+    }
 }
 
 export default Api;
