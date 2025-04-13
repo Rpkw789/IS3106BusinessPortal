@@ -81,8 +81,6 @@ export function applyFilter({ inputData, comparator, filterName, status }: Apply
     );
   }
 
-  console.log(status);
-
   if (status !== 'all') {
     inputData = inputData.filter((user) => user.status === status);
   }

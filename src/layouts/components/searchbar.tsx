@@ -63,7 +63,6 @@ export function Searchbar({ sx, ...other }: BoxProps) {
             {...other}
           >
             <Input
-              autoFocus
               fullWidth
               disableUnderline
               placeholder="Search…"

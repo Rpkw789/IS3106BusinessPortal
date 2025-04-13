@@ -52,7 +52,7 @@ export function NewOneTimeActivityPage() {
             isComplete: false,
             frequencyDay: targetDay,
         });
-        fetch('http://localhost:3000/api/activities/add-new-scheduled-activity', {
+        fetch('http://localhost:3000/api/activities/add-new-one-time-activity', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -161,6 +161,7 @@ export function NewOneTimeActivityPage() {
                                 fullWidth
                                 label="Activity Duration"
                                 type="number"
+                                inputProps={{ step: "0.01", min: "0" }}
                                 {...register('duration', { required: 'Activity duration is required' })}
                                 sx={{ mb: 2 }}
                             />

@@ -24,7 +24,7 @@ import { Scrollbar } from 'src/components/scrollbar';
 // ----------------------------------------------------------------------
 
 export type FiltersProps = {
-  rating: string;
+  rating: number;
   creditRange: number[];
   status: string;
   vacanciesRange: number[];
@@ -40,7 +40,7 @@ type ProductFiltersProps = {
   onResetFilter: () => void;
   onSetFilters: (updateState: Partial<FiltersProps>) => void;
   options: {
-    ratings: string[];
+    ratings: number[];
     creditRange: number[];
     status: { value: string; label: string }[];
     vacanciesRange: number[];
@@ -65,10 +65,10 @@ export function ProductFilters({
         Rating
       </Typography>
 
-      {options.ratings.map((option, index) => (
+      {options.ratings.map((ratingValue) => (
         <Box
-          key={option}
-          onClick={() => onSetFilters({ rating: option })}
+          key={ratingValue}
+          onClick={() => onSetFilters({ rating: ratingValue })}
           sx={{
             mb: 1,
             gap: 1,
@@ -80,12 +80,12 @@ export function ProductFilters({
             typography: 'body2',
             alignItems: 'center',
             '&:hover': { opacity: 0.48 },
-            ...(filters.rating === option && {
+            ...(filters.rating === ratingValue && {
               bgcolor: 'action.selected',
             }),
           }}
         >
-          <Rating readOnly value={4 - index} /> & Up
+          <Rating readOnly value={ratingValue} /> & Up
         </Box>
       ))}
     </Stack>
@@ -107,7 +107,7 @@ export function ProductFilters({
       />
     </Stack>
   );
-  
+
   const renderStatusFilter = (
     <Stack spacing={1}>
       <Typography variant="subtitle2">Status</Typography>
@@ -127,7 +127,7 @@ export function ProductFilters({
         ))}
       </RadioGroup>
     </Stack>
-  );  
+  );
 
   const renderVacanciesFilter = (
     <Stack spacing={1}>
@@ -144,7 +144,7 @@ export function ProductFilters({
         sx={{ color: "green" }}
       />
     </Stack>
-  );  
+  );
 
   return (
     <>

@@ -11,9 +11,14 @@ function formatTimeRange(frequencyTime: string, duration: string) {
     const startTime = new Date();
     startTime.setHours(hours, minutes, 0, 0); // Set start time with frequency time
 
+    const durationInHours = parseFloat(duration);
+    const durationHours = Math.floor(durationInHours);
+    const durationMinutes = Math.round((durationInHours - durationHours) * 60);
+
     // Calculate the end time by adding the duration (in hours) to the start time
     const endTime = new Date(startTime);
-    endTime.setHours(endTime.getHours() + Number(duration));
+    endTime.setHours(endTime.getHours() + durationHours);
+    endTime.setMinutes(endTime.getMinutes() + durationMinutes);
 
     // Format the start and end times as "HH:mm"
     const formattedStartTime = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -31,7 +36,8 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
     const router = useRouter();
 
     const [activity, setActivity] = useState<ProductItemProps>(product);
-    console.log(activity);
+    const [rating, setRating] = useState<number>(0);
+    const [ratingExist, setRatingExist] = useState<boolean>(true);
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -46,6 +52,18 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
         }
         handleIsCompleteChange();
     }, [activity.startDate]);
+
+    useEffect(() => {
+        fetch(`http://localhost:3000/api/reviews/calAct/${activity._id}`)
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.status === "success") {
+                    setRating(data.rating);
+                } else {
+                    setRatingExist(false);
+                }
+            })
+    }, [activity._id]);
 
     const onDelete = () => {
         fetch(`http://localhost:3000/api/activities/${product._id}`, {
@@ -92,7 +110,11 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
                         <Divider sx={{ my: 1 }} />
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography variant="body1"><strong>Rating:</strong></Typography>
-                            <Rating value={ activity.rating } precision={0.5} readOnly />
+                            {ratingExist ? (
+                                <Rating value={ rating ?? 3 } precision={0.5} readOnly />
+                            ) : (
+                                <Typography variant="body2" color="text.secondary">No rating available yet</Typography>
+                            )}
                         </Box>
                     </Stack>
                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>

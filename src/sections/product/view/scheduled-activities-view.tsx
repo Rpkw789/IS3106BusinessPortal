@@ -20,7 +20,7 @@ import type { FiltersProps } from '../product-filters';
 
 // ----------------------------------------------------------------------
 
-const RATING_OPTIONS = ['up4Star', 'up3Star', 'up2Star', 'up1Star'];
+const RATING_OPTIONS: number[] = [4, 3, 2, 1];
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
@@ -29,7 +29,7 @@ const STATUS_OPTIONS = [
 ];
 
 const defaultFilters = {
-  rating: RATING_OPTIONS[0],
+  rating: 0,
   creditRange: [0, 15],
   status: STATUS_OPTIONS[0].value,
   vacanciesRange: [0, 100],
@@ -70,14 +70,13 @@ export function ScheduledActivitiesView() {
   useEffect(() => {
     const fetchScheduledActivities = async () => {
       const { creditRange, vacanciesRange, rating, status } = filters;
-
       const queryParams = new URLSearchParams({
         isOneTime: 'false',
         minCredit: String(creditRange[0]),
         maxCredit: String(creditRange[1]),
         minVacancy: String(vacanciesRange[0]),
         maxVacancy: String(vacanciesRange[1]),
-        rating,
+        rating: String(rating),
         status,
         sortBy,
       });
@@ -93,7 +92,7 @@ export function ScheduledActivitiesView() {
   
         const result = await response.json();
         setActivities(result);
-        console.log('Scheduled Activities:', result);
+        console.log('hi Activities:', result);
       } catch (error) {
         console.error('Error fetching scheduled activities:', error);
       }
@@ -167,7 +166,7 @@ export function ScheduledActivitiesView() {
       )}
       </Grid>
 
-      <Pagination count={10} color="primary" sx={{ mt: 8, mx: 'auto' }} />
+      {/* <Pagination count={10} color="primary" sx={{ mt: 8, mx: 'auto' }} /> */}
     </DashboardContent>
   );
 }

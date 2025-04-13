@@ -1,9 +1,15 @@
-import {useState} from 'react';
-import dayjs, {Dayjs} from 'dayjs';
-import { Toolbar, Card, Typography, Divider, Stack, TableRow, TableCell, Box, Button} from "@mui/material";
+import { useState } from 'react';
+import dayjs, { Dayjs } from 'dayjs';
+import {
+    Toolbar, Card, Typography, Divider,
+    Stack, TableRow, TableCell, Box, Button, MenuItem,
+    Tooltip, Dialog, DialogTitle, IconButton, DialogContent, TextField,
+    FormControl, RadioGroup, Radio, FormControlLabel, DialogActions
+} from "@mui/material";
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputAdornment from '@mui/material/InputAdornment';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { red } from '@mui/material/colors';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Iconify } from 'src/components/iconify';
@@ -13,27 +19,97 @@ import { BookingProp } from '../Bookings/bookings-table-row';
 type FinanceToolbarProps = {
     chooseDate: string;
     onChooseDate: (value: Dayjs | null) => void;
+    activityOptions: string[];
+    onChangeActivity: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    selectedFilter: string;
+    confirmFilter: () => void;
 };
 
-export function FinanceToolbar({chooseDate, onChooseDate} : FinanceToolbarProps) {
+export function FinanceToolbar({ chooseDate, onChooseDate, activityOptions, onChangeActivity, selectedFilter, confirmFilter }: FinanceToolbarProps) {
     const dayjsDate = chooseDate ? dayjs(chooseDate, 'MM YYYY') : null;
+    const [filter, onFilter] = useState(false);
+    const openFilter = () => {
+        onFilter(true);
+    };
+
+    const closeFilter = () => {
+        onFilter(false);
+    };
+
+    // Once choose filter, filter staff data
+
+    const confirmedFilter = () => {
+        confirmFilter();
+        closeFilter();
+    }
     return (
-            <Toolbar
-                sx={{
-                    height: 96,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                }}
-                >
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker 
-                        label='Choose MM YYYY' 
-                        views={['month', 'year']} 
+        <Toolbar
+            sx={{
+                height: 96,
+                display: 'flex',
+                justifyContent: 'space-between',
+            }}
+        >
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <DatePicker
+                        label="Choose MM YYYY"
+                        views={['month', 'year']}
                         value={dayjsDate}
-                        onChange={onChooseDate}/>
-                </LocalizationProvider>
-            </Toolbar>
-)};
+                        onChange={onChooseDate}
+                    />
+                    {chooseDate && (
+                        <Button
+                            variant="outlined"
+                            onClick={() => onChooseDate(null)}
+                            sx={{ height: '40px' }}
+                        >
+                            Clear
+                        </Button>
+                    )}
+                </Box>
+            </LocalizationProvider>
+            {/* <Box>
+                <Tooltip title="Filter By Activities">
+                    <IconButton onClick={openFilter}>
+                        <Iconify icon="ic:round-filter-list" />
+                    </IconButton>
+                </Tooltip>
+                <Dialog
+                    open={filter}
+                    onClose={closeFilter}
+                    aria-labelledby="filter-popUp"
+                    aria-describedby="filter-description"
+                >
+                    <DialogTitle id="filter-title">
+                        Filter by Activities
+                    </DialogTitle>
+                    <DialogContent>
+                        <TextField
+                            id="outlined-select-currency"
+                            select
+                            value={selectedFilter}
+                            onChange={onChangeActivity}
+                            helperText="Please select your Activity"
+                        >
+                            {activityOptions.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                    {option}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button sx={{ color: red[500] }} onClick={closeFilter}>Cancel</Button>
+                        <Button onClick={confirmedFilter}>
+                            Confirm
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            </Box> */}
+        </Toolbar>
+    )
+};
 
 // ----------------------------------------------------------------------
 
@@ -104,7 +180,7 @@ export function EarningsRow({ row }: { row: GroupedBooking }) {
             </TableCell>
 
             <TableCell>{row.totalCredits}</TableCell>
-            
+
             <TableCell>${row.cashEarned.toFixed(2)}</TableCell>
         </TableRow>
     );
