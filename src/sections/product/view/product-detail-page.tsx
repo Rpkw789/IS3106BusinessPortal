@@ -36,7 +36,8 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
     const router = useRouter();
 
     const [activity, setActivity] = useState<ProductItemProps>(product);
-    console.log(activity);
+    const [rating, setRating] = useState<number>(0);
+    const [ratingExist, setRatingExist] = useState<boolean>(true);
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -51,6 +52,18 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
         }
         handleIsCompleteChange();
     }, [activity.startDate]);
+
+    useEffect(() => {
+        fetch(`http://localhost:3000/api/reviews/calAct/${activity._id}`)
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.status === "success") {
+                    setRating(data.rating);
+                } else {
+                    setRatingExist(false);
+                }
+            })
+    }, [activity._id]);
 
     const onDelete = () => {
         fetch(`http://localhost:3000/api/activities/${product._id}`, {
@@ -95,11 +108,13 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
                         <Typography variant="body1"><strong>Total Slots:</strong> {activity.totalSlots} (Signed Up: {activity.signUps})</Typography>
                         <Typography variant="body1"><strong>Description:</strong> {activity.description}</Typography>
                         <Divider sx={{ my: 1 }} />
-                        {/* TODO: Activity Rating should be derived from API call, 
-                        Rating should be separate collection */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography variant="body1"><strong>Rating:</strong></Typography>
-                            <Rating value={ activity.rating } precision={0.5} readOnly />
+                            {ratingExist ? (
+                                <Rating value={ rating ?? 3 } precision={0.5} readOnly />
+                            ) : (
+                                <Typography variant="body2" color="text.secondary">No rating available yet</Typography>
+                            )}
                         </Box>
                     </Stack>
                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>

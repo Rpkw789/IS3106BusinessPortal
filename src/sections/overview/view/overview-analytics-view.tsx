@@ -44,7 +44,7 @@ export function OverviewAnalyticsView() {
 	const [filterName, setFilterName] = useState('');
 	const [chooseDate, setChooseDate] = useState('');
 	const [historyStats, setHistoryStats] = useState([]);
-	const [thisMonthCredits, setThisMonthCredits] = useState(0);
+	const [ratingStats, setRatingStats] = useState([]);
 	const [bookings, setBookings] = useState<BookingProp[]>([]);
 	const [pieChartData, setPieChartData] = useState<any[]>([]);
 	const [seriesData, setSeriesData] = useState<any[]>([]);
@@ -108,7 +108,6 @@ export function OverviewAnalyticsView() {
 					data.forEach((item) => {
 						credit += item.creditSpent;
 					});
-					setThisMonthCredits(credit);
 				}
 			})
 		fetch(`http://localhost:3000/api/bookings/historyStats${monthQueryStr}`,
@@ -123,6 +122,18 @@ export function OverviewAnalyticsView() {
 			.then((data) => {
 				if (data.status === 'success') {
 					setHistoryStats(data.monthly);
+				}
+			})
+		fetch(`http://localhost:3000/api/reviews//calMonthlyBiz${monthQueryStr}`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${localStorage.getItem("token")}`,
+			},
+		}).then((res) => res.json())
+			.then((data) => {
+				if (data.status === 'success') {
+					setRatingStats(data.monthly);
 				}
 			})
 	}, [monthQueryStr]);
@@ -184,7 +195,7 @@ export function OverviewAnalyticsView() {
 					<AnalyticsWidgetSummary
 						title="Monthly Credits Earned"
 						percent={(historyStats[historyStats.length - 1] - historyStats[historyStats.length - 2]) / historyStats[historyStats.length - 2] * 100}
-						total={thisMonthCredits}
+						total={historyStats[historyStats.length - 1]}
 						color="warning"
 						icon={<img alt="icon" src="/assets/icons/glass/ic-glass-buy.svg" />}
 						chart={{
@@ -195,16 +206,15 @@ export function OverviewAnalyticsView() {
 				</Grid>
 
 				<Grid xs={12} sm={6}>
-					{/* TODO: Need to recalculate Ratings */}
 					<AnalyticsWidgetSummary
 						title="Ratings"
-						percent={2.8}
-						total={4.8}
+						percent={(ratingStats[ratingStats.length - 1] - ratingStats[ratingStats.length - 2]) / ratingStats[ratingStats.length - 2] * 100}
+						total={ratingStats[ratingStats.length - 1]}
 						color="primary"
 						icon={<img alt="icon" src="/assets/icons/glass/clipart3078264.png" />}
 						chart={{
 							categories: monthCategories,
-							series: [40, 70, 50, 28, 70, 75, 7, 64],
+							series: ratingStats,
 						}}
 					/>
 				</Grid>
