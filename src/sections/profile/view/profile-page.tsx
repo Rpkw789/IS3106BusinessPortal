@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, Avatar, Typography, Button, Grid, TextField, Select, MenuItem, SelectChangeEvent } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { set } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
 import EditIconSVG from "src/components/editIconSVG";
 import Api from "src/helpers/Api";
 
@@ -24,6 +25,8 @@ export type Profile = {
   password: string; //
   profileImage: string; //
   created: string;
+  directions: string;
+  gallery: string[];
 };
 
 export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
@@ -32,6 +35,8 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [isOperational, setIsOperational] = useState(profile.isOperational);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
 
@@ -80,9 +85,10 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
 
   };
 
+
   return (
     <Card style={{ margin: 20 }}>
-      <div style={{ width: 908, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
         <div style={{ width: '100%', padding: 16, display: 'flex', justifyContent: 'space-between' }}>
           <div style={{ width: 288, display: 'flex', flexDirection: 'column' }}>
             <div style={{ color: '#121417', fontSize: 32, fontWeight: '700', lineHeight: '40px' }}>Business Profile</div>
@@ -148,6 +154,41 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
             />
           </div>) : (<div style={{ fontSize: 14 }}>{profile.businessDescription}</div>)}
         </div>
+        <div style={{ width: '100%', padding: 16, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ color: '#121417', fontSize: 18, fontWeight: '700' }}>Directions</div>
+          {isEditPage ? (<div>
+            <TextField
+              multiline
+              maxRows={10}
+              fullWidth
+              name="directions"
+              label=""
+              defaultValue={profile.directions}
+              InputLabelProps={{ shrink: true }}
+              sx={{ mb: 3, mt: 1 }}
+              onChange={(e) => insertUpdateData("directions", e.target.value)}
+            />
+          </div>) : (<div style={{ fontSize: 14 }}>{profile.directions}</div>)}
+        </div>
+
+        <div style={{ width: '100%', padding: 16, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ color: '#121417', fontSize: 18, fontWeight: '700', marginBottom: 12 }}>Gallery</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+            {profile.gallery?.map((imgUrl, index) => (
+              <div key={index} style={{ position: 'relative' }}>
+                <img
+                  src={`http://localhost:3000/${imgUrl}`}
+                  alt={`Gallery ${index}`}
+                  style={{ width: 128, height: 128, objectFit: 'cover', borderRadius: 12 }}
+                />
+              </div>
+            ))}
+            <Button onClick={() => { navigate("gallery") }} variant="contained" color="primary" style={{ padding: '12px 24px', borderRadius: 8, textTransform: 'none', maxHeight: 40 }}>
+              <div style={{ fontSize: 14, fontWeight: '700' }}>{profile.gallery?.length === 0 ? "Add photos" : "View All"}</div>
+            </Button>
+          </div>
+        </div>
+
         <div style={{ width: '100%', padding: 16, display: 'flex', flexDirection: 'column' }}>
           <div style={{ color: '#121417', fontSize: 18, fontWeight: '700' }}>Business Details</div>
         </div>

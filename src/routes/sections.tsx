@@ -7,6 +7,7 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { varAlpha } from 'src/theme/styles';
 import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
+import GalleryPage from 'src/pages/profile-gallery';
 
 // ----------------------------------------------------------------------
 
@@ -60,6 +61,7 @@ export function Router() {
         { path: 'add-one-time-activity', element: <NewOneTimeActivity /> },
         { path: 'activities/:activityId/customers', element: <ProductCustomerPage /> },
         { path: 'edit-activity/:activityId', element: <EditActivityPage /> },
+        { path: 'profile/gallery', element: <GalleryPage /> },
         { path: 'profile', element: <ProfilePage /> },
         { path: 'edit-profile', element: <EditProfilePage /> },
       ],
