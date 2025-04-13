@@ -23,7 +23,6 @@ export default function ProfilePage() {
       })
       .then((data) => {
         if (data.status === "success") {
-          console.log("Fetched Profile Data:", data);
           setProfile(data.business);
         } else {
           console.error(data.message);

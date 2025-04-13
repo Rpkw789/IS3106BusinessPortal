@@ -1,6 +1,8 @@
 import type { CardProps } from '@mui/material/Card';
 import type { ChartOptions } from 'src/components/chart';
 
+import { Box } from '@mui/material';
+import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
@@ -14,6 +16,7 @@ import { Chart, useChart, ChartLegends } from 'src/components/chart';
 
 type Props = CardProps & {
   title?: string;
+  noData?: boolean;
   subheader?: string;
   chart: {
     colors?: string[];
@@ -25,7 +28,7 @@ type Props = CardProps & {
   };
 };
 
-export function AnalyticsCurrentVisits({ title, subheader, chart, ...other }: Props) {
+export function AnalyticsCurrentVisits({ title, noData, subheader, chart, ...other }: Props) {
   const theme = useTheme();
 
   const chartSeries = chart.series.map((item) => item.value);
@@ -56,23 +59,39 @@ export function AnalyticsCurrentVisits({ title, subheader, chart, ...other }: Pr
   return (
     <Card {...other}>
       <CardHeader title={title} subheader={subheader} />
-
-      <Chart
-        type="pie"
-        series={chartSeries}
-        options={chartOptions}
-        width={{ xs: 240, xl: 260 }}
-        height={{ xs: 240, xl: 260 }}
-        sx={{ my: 6, mx: 'auto' }}
-      />
-
-      <Divider sx={{ borderStyle: 'dashed' }} />
-
-      <ChartLegends
-        labels={chartOptions?.labels}
-        colors={chartOptions?.colors}
-        sx={{ p: 3, justifyContent: 'center' }}
-      />
+      {noData ? (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: 240,
+          }}
+        >
+          <Typography variant="subtitle1" color="text.secondary">
+            No data available
+          </Typography>
+        </Box>
+      ) : (
+        <Box>
+          <Chart
+          type="pie"
+          series={chartSeries}
+          options={chartOptions}
+          width={{ xs: 240, xl: 260 }}
+          height={{ xs: 240, xl: 260 }}
+          sx={{ my: 6, mx: 'auto' }}
+        />
+  
+        <Divider sx={{ borderStyle: 'dashed' }} />
+  
+        <ChartLegends
+          labels={chartOptions?.labels}
+          colors={chartOptions?.colors}
+          sx={{ p: 3, justifyContent: 'center' }}
+        />
+        </Box>
+      )}
     </Card>
   );
 }

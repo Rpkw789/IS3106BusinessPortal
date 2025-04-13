@@ -59,7 +59,7 @@ export function Router() {
         { path: 'activities/:productId', element: <ProductsDetailsPage /> },
         { path: 'add-scheduled-activity', element: <NewScheduledActivity /> },
         { path: 'add-one-time-activity', element: <NewOneTimeActivity /> },
-        { path: 'product/:activityId/customers', element: <ProductCustomerPage /> },
+        { path: 'activities/:activityId/customers', element: <ProductCustomerPage /> },
         { path: 'edit-activity/:activityId', element: <EditActivityPage /> },
         { path: 'profile/gallery', element: <GalleryPage /> },
         { path: 'profile', element: <ProfilePage /> },

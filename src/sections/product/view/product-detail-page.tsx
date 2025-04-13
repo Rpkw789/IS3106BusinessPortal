@@ -11,9 +11,14 @@ function formatTimeRange(frequencyTime: string, duration: string) {
     const startTime = new Date();
     startTime.setHours(hours, minutes, 0, 0); // Set start time with frequency time
 
+    const durationInHours = parseFloat(duration);
+    const durationHours = Math.floor(durationInHours);
+    const durationMinutes = Math.round((durationInHours - durationHours) * 60);
+
     // Calculate the end time by adding the duration (in hours) to the start time
     const endTime = new Date(startTime);
-    endTime.setHours(endTime.getHours() + Number(duration));
+    endTime.setHours(endTime.getHours() + durationHours);
+    endTime.setMinutes(endTime.getMinutes() + durationMinutes);
 
     // Format the start and end times as "HH:mm"
     const formattedStartTime = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -90,6 +95,8 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
                         <Typography variant="body1"><strong>Total Slots:</strong> {activity.totalSlots} (Signed Up: {activity.signUps})</Typography>
                         <Typography variant="body1"><strong>Description:</strong> {activity.description}</Typography>
                         <Divider sx={{ my: 1 }} />
+                        {/* TODO: Activity Rating should be derived from API call, 
+                        Rating should be separate collection */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography variant="body1"><strong>Rating:</strong></Typography>
                             <Rating value={ activity.rating } precision={0.5} readOnly />

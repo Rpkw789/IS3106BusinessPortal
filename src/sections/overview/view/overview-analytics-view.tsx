@@ -11,51 +11,140 @@ import { _tasks, _posts, _timeline, _activity } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { BookingProp } from 'src/sections/Bookings/bookings-table-row';
-import dayjs, { Dayjs } from 'dayjs';
+import { format } from 'date-fns';
+import { Dayjs } from 'dayjs';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useTable } from 'src/sections/Bookings/view';
 import { getComparator, emptyRows } from 'src/sections/Bookings/utils';
 import { TableEmptyRows } from 'src/sections/Bookings/table-empty-rows';
 import { TableNoData } from 'src/sections/Bookings/table-no-data';
-import { AnalyticsNews } from '../analytics-news';
-import { AnalyticsTasks } from '../analytics-tasks';
 import { AnalyticsCurrentVisits } from '../analytics-current-visits';
-import { AnalyticsOrderTimeline } from '../analytics-order-timeline';
 import { AnalyticsWebsiteVisits } from '../analytics-website-visits';
 import { AnalyticsWidgetSummary } from '../analytics-widget-summary';
 import { TodayActivities, ActivityTableHead, ActivityTableRow } from '../analytics-today-activities';
-import { EarningsRow, FinanceToolbar, TotalEarnings, GroupedBooking } from '../earnings';
+import { EarningsRow, FinanceToolbar, TotalEarnings } from '../earnings';
+import {
+	applyFilter, applyFinanceFilter, groupBookingsByActivity, ActivityProp,
+	groupBookingsByActivityPie
+} from './util';
 
 // ----------------------------------------------------------------------
-export type ActivityProp = {
-	id: string;
-	name: string;
-	date: Date;
-	start: string;
-	end: string;
-	signups: number;
-};
 
 export function OverviewAnalyticsView() {
+	const today = new Date();
+	const yyyy = today.getFullYear();
+	const mm = String(today.getMonth() + 1).padStart(2, '0');
+	const monthQueryStr = `?month=${mm}_${yyyy}`;
 	const table = useTable();
 	const earningsTable = useTable();
+	const monthCategories = Array.from({ length: parseInt(mm, 10) }, (_, i) =>
+		format(new Date(2024, i, 1), 'MMM')
+	);
 
 	const [filterName, setFilterName] = useState('');
 	const [chooseDate, setChooseDate] = useState('');
+	const [historyStats, setHistoryStats] = useState([]);
+	const [thisMonthCredits, setThisMonthCredits] = useState(0);
 	const [bookings, setBookings] = useState<BookingProp[]>([]);
+	const [pieChartData, setPieChartData] = useState<any[]>([]);
+	const [seriesData, setSeriesData] = useState<any[]>([]);
+	const [todayActivities, setTodayActivities] = useState<ActivityProp[]>([]);
+	const [selectedFilter, setSelectedFilter] = useState('');
+	const [confirmedFilter, setConfirmedFilter] = useState("");
 	useEffect(() => {
-		fetch(`http://localhost:3000/api/bookings/biz/65c345678901abcd12345678${chooseDate}`)
-		.then((response) => response.json())
-		.then((data) => {
-			setBookings(data);
-		})
-		.catch((error) => {
-			console.error('Error fetching bookings:', error);
-		}); // This will log only when chooseDate changes
-	  }, [chooseDate]);
+		const query = confirmedFilter !== "" ? `&activity=${confirmedFilter}` : "";
+		fetch(`http://localhost:3000/api/bookings/biz${chooseDate}${query}`,
+			{
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${localStorage.getItem("token")}`,
+				},
+			}
+		).then((response) => response.json())
+			.then((data) => {
+				if (Array.isArray(data)) {
+					setBookings(data);
+				} else {
+					console.error('Server returned error response:', data);
+					setBookings([]); // Set to empty array if not a valid bookings list
+				}
+			})
+	}, [chooseDate, confirmedFilter]);
+	useEffect(() => {
+		fetch('http://localhost:3000/api/activities/today-activities',
+			{
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${localStorage.getItem("token")}`,
+				},
+			})
+			.then((res) => {
+				if (res.ok) {
+					return res.json();  // This returns a Promise
+				}
+				throw new Error('Network response was not ok');
+			})
+			.then((data) => {
+				setTodayActivities(data);  // Now data is the resolved value from res.json()
+			})
+			.catch((error) => {
+				console.error('Error fetching activities:', error);
+			});
+		fetch(`http://localhost:3000/api/bookings/biz${monthQueryStr}`,
+			{
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${localStorage.getItem("token")}`,
+				},
+			})
+			.then((response) => response.json())
+			.then((data) => {
+				if (Array.isArray(data)) {
+					let credit = 0;
+					setPieChartData(groupBookingsByActivityPie(data));
+					data.forEach((item) => {
+						credit += item.creditSpent;
+					});
+					setThisMonthCredits(credit);
+				}
+			})
+		fetch(`http://localhost:3000/api/bookings/historyStats${monthQueryStr}`,
+			{
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${localStorage.getItem("token")}`,
+				},
+			})
+			.then((res) => res.json())
+			.then((data) => {
+				if (data.status === 'success') {
+					setHistoryStats(data.monthly);
+				}
+			})
+	}, [monthQueryStr]);
+
+	useEffect(() => {
+		const seriesDataNew = !pieChartData || pieChartData.length === 0
+			? [
+				{ label: 'Activity 1', value: 3500 },
+				{ label: 'Activity 2', value: 2500 },
+				{ label: 'Activity 3', value: 1500 },
+				{ label: 'Activity 4', value: 500 },
+			]
+			: pieChartData.map((item) => {
+				const label = item.activityName.split('(')[0].trim(); // safer than slice
+				const value = item.counter;
+				return { label, value };
+			});
+		setSeriesData(seriesDataNew);
+	}, [pieChartData]);
 
 	const dataFiltered: ActivityProp[] = applyFilter({
-		inputData: _activity,
+		inputData: todayActivities,
 		comparator: getComparator(table.order, table.orderBy),
 		filterName,
 	});
@@ -64,11 +153,24 @@ export function OverviewAnalyticsView() {
 	const bookingsFiltered: BookingProp[] = applyFinanceFilter({
 		inputData: bookings,
 		comparator: getComparator(table.order, table.orderBy),
-		date: chooseDate,
+		confirmedFilter,
 	});
 
-	const groupedBookings = useMemo(() => 
-		groupBookingsByActivity(bookingsFiltered),[bookingsFiltered]);
+	const groupedBookings = useMemo(() =>
+		groupBookingsByActivity(bookingsFiltered), [bookingsFiltered]);
+	const activityOptions = groupedBookings.map((group) => group.activityName);
+
+
+	useEffect(() => {
+		if (activityOptions.length > 0 && !selectedFilter) {
+			setSelectedFilter(activityOptions[0]);
+		}
+	}, [activityOptions, selectedFilter]);
+
+	const confirmFilter = () => {
+		setConfirmedFilter(selectedFilter)
+		console.log('Filter confirmed:', selectedFilter);
+	}
 
 	return (
 		<DashboardContent maxWidth="xl">
@@ -81,18 +183,19 @@ export function OverviewAnalyticsView() {
 				<Grid xs={12} sm={6}>
 					<AnalyticsWidgetSummary
 						title="Monthly Credits Earned"
-						percent={2.8}
-						total={500}
+						percent={(historyStats[historyStats.length - 1] - historyStats[historyStats.length - 2]) / historyStats[historyStats.length - 2] * 100}
+						total={thisMonthCredits}
 						color="warning"
 						icon={<img alt="icon" src="/assets/icons/glass/ic-glass-buy.svg" />}
 						chart={{
-							categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-							series: [40, 70, 50, 28, 70, 75, 7, 64],
+							categories: monthCategories,
+							series: historyStats,
 						}}
 					/>
 				</Grid>
 
 				<Grid xs={12} sm={6}>
+					{/* TODO: Need to recalculate Ratings */}
 					<AnalyticsWidgetSummary
 						title="Ratings"
 						percent={2.8}
@@ -100,7 +203,7 @@ export function OverviewAnalyticsView() {
 						color="primary"
 						icon={<img alt="icon" src="/assets/icons/glass/clipart3078264.png" />}
 						chart={{
-							categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+							categories: monthCategories,
 							series: [40, 70, 50, 28, 70, 75, 7, 64],
 						}}
 					/>
@@ -119,9 +222,19 @@ export function OverviewAnalyticsView() {
 							const formattedDate = `?month=${date.format('MM_YYYY')}`;
 							setChooseDate(formattedDate);
 							earningsTable.onResetPage();
+						} else {
+							setChooseDate('');
+							earningsTable.onResetPage();
 						}
-						 // Convert Dayjs to string
+						// Convert Dayjs to string
 					}}
+					selectedFilter={selectedFilter}
+					onChangeActivity={(event: React.ChangeEvent<HTMLInputElement>) => {
+						setSelectedFilter(event.target.value);
+						earningsTable.onResetPage();
+					}}
+					activityOptions={activityOptions}
+					confirmFilter={confirmFilter}
 				/>
 
 				<Scrollbar>
@@ -234,117 +347,14 @@ export function OverviewAnalyticsView() {
 			</Card>
 
 			<Grid container spacing={3} sx={{ mt: 5 }}>
-				<Grid xs={12} md={6} lg={4}>
+				<Grid xs={12}>
 					<AnalyticsCurrentVisits
-						title="Activities Booked"
-						chart={{
-							series: [
-								{ label: 'Activity 1', value: 3500 },
-								{ label: 'Activity 2', value: 2500 },
-								{ label: 'Activity 3', value: 1500 },
-								{ label: 'Activity 4', value: 500 },
-							],
-						}}
+						title="Bookings For This Month"
+						noData={!pieChartData || pieChartData.length === 0}
+						chart={{ series: seriesData }}
 					/>
-				</Grid>
-
-				<Grid xs={12} md={6} lg={8}>
-					<AnalyticsWebsiteVisits
-						title="Booking Volume"
-						subheader="(+43%) than last year"
-						chart={{
-							categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-							series: [
-								{ name: 'Team A', data: [43, 33, 22, 37, 67, 68, 37, 24, 55] }
-							],
-						}}
-					/>
-				</Grid>
-
-				<Grid xs={12} md={6} lg={8}>
-					<AnalyticsTasks title="Tasks" list={_tasks} />
 				</Grid>
 			</Grid>
 		</DashboardContent>
 	);
-}
-
-// ----------------------------------------------------------------------
-type ApplyFilterProps = {
-	inputData: ActivityProp[];
-	filterName: string;
-	comparator: (a: any, b: any) => number;
-};
-
-export function applyFilter({ inputData, comparator, filterName }: ApplyFilterProps) {
-	const stabilizedThis = inputData.map((el, index) => [el, index] as const);
-
-	stabilizedThis.sort((a, b) => {
-		const order = comparator(a[0], b[0]);
-		if (order !== 0) return order;
-		return a[1] - b[1];
-	});
-
-	inputData = stabilizedThis.map((el) => el[0]);
-
-	if (filterName) {
-		inputData = inputData.filter(
-			(user) => user.name.toLowerCase().indexOf(filterName.toLowerCase()) !== -1
-		);
-	}
-
-	return inputData;
-}
-
-// ----------------------------------------------------------------------
-
-type FinanceFilerProps = {
-	inputData: BookingProp[];
-	date: string;
-	comparator: (a: any, b: any) => number;
-}
-
-export function applyFinanceFilter({ inputData, date, comparator }: FinanceFilerProps) {
-	const chosenDayjs = date ? dayjs(date.replace('?month=', ''), 'MM_YYYY') : null;
-
-	const stabilizedThis = inputData.map((el, index) => [el, index] as const);
-
-	stabilizedThis.sort((a, b) => {
-		const order = comparator(a[0], b[0]);
-		if (order !== 0) return order;
-		return a[1] - b[1];
-	});
-
-	inputData = stabilizedThis.map((el) => el[0]);
-
-	if (chosenDayjs) {
-		inputData = inputData.filter(
-			(booking) => {
-				const bookingDayjs = dayjs(booking.bookingDate);
-				return bookingDayjs.isSame(chosenDayjs, 'month') && bookingDayjs.isSame(chosenDayjs, 'year');
-			}
-		);
-	}
-
-	return inputData;
-}
-
-// ----------------------------------------------------------------------
-
-export function groupBookingsByActivity(bookings: BookingProp[], cashPerCredit: number = 10): GroupedBooking[] {
-	if (!bookings || bookings.length === 0) return [];
-	const grouped: Record<string, GroupedBooking> = {};
-	bookings.forEach((booking) => {
-		if (!grouped[booking.activityId]) {
-			grouped[booking.activityId] = {
-				activityName: `Activity ${booking.activityId}`,
-				totalCredits: 0,
-				cashEarned: 0
-			};
-		}
-		grouped[booking.activityId].totalCredits += Number(booking.creditSpent);
-		grouped[booking.activityId].cashEarned = grouped[booking.activityId].totalCredits * cashPerCredit;
-	});
-
-	return Object.values(grouped);
 }
