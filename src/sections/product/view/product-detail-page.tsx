@@ -107,15 +107,7 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
                         <Typography variant="body1"><strong>Credit Cost:</strong> {activity.creditCost}</Typography>
                         <Typography variant="body1"><strong>Total Slots:</strong> {activity.totalSlots} (Signed Up: {activity.signUps})</Typography>
                         <Typography variant="body1"><strong>Description:</strong> {activity.description}</Typography>
-                        <Divider sx={{ my: 1 }} />
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body1"><strong>Rating:</strong></Typography>
-                            {ratingExist ? (
-                                <Rating value={ rating ?? 3 } precision={0.5} readOnly />
-                            ) : (
-                                <Typography variant="body2" color="text.secondary">No rating available yet</Typography>
-                            )}
-                        </Box>
+                        <Typography variant="body1"><strong>Directions:</strong> {activity.directions}</Typography>
                     </Stack>
                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
                         <Button variant="contained" color="secondary" onClick={() => router.push(`/activities/${activity._id}/customers`)}>

@@ -1,6 +1,9 @@
 import { Controller, useForm } from 'react-hook-form';
-import { Box, Button, Container, TextField, Typography, 
-    RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Select, InputLabel, MenuItem, Slider } from "@mui/material";
+import {
+    Box, Button, Container, TextField, Typography,
+    RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Select, InputLabel, MenuItem, Slider,
+    Checkbox
+} from "@mui/material";
 import { useRouter } from 'src/routes/hooks';
 import { useEffect, useState } from 'react';
 import { red } from '@mui/material/colors';
@@ -12,6 +15,7 @@ export function NewScheduledActivityPage() {
     const [useProfileDirection, setUseProfileDirection] = useState(false);
     const [direction, setDirection] = useState('');
     const [canCheckbox, setCanCheckbox] = useState(false);
+    const [customDirection, setCustomDirection] = useState('');
     const router = useRouter();
 
     useEffect(() => {
@@ -22,19 +26,19 @@ export function NewScheduledActivityPage() {
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
         }).then((response) => response.json())
-        .then((data) => {
-            if (data.status === 'success') {
-                if (data.business.directions !== "") {
-                    setDirection(data.business.directions);
-                    setCanCheckbox(true);
+            .then((data) => {
+                if (data.status === 'success') {
+                    if (data.business.directions !== "") {
+                        setDirection(data.business.directions);
+                        setCanCheckbox(true);
+                    }
                 }
-            }
-        })
+            })
     }, []);
 
     const onSubmit = async (data: any) => {
         const token = localStorage.getItem("token");
-    
+
         // Convert startDate and endDate to Date objects
         const startDate = new Date(data.startDate);
         const endDate = new Date(data.endDate);
@@ -42,17 +46,17 @@ export function NewScheduledActivityPage() {
         const timeParts = data.frequencyTime.split(":"); // Extract hours and minutes from input
         const hour = parseInt(timeParts[0], 10); // Convert to number
         const minute = parseInt(timeParts[1], 10); // Convert to number
-    
+
         // Map day names to numeric values (Sunday = 0, Monday = 1, ..., Saturday = 6)
         const dayMapping: { [key: string]: number } = {
             "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3,
             "Thursday": 4, "Friday": 5, "Saturday": 6
         };
-    
+
         const targetDay = dayMapping[frequencyDay]; // Numeric value of chosen day
-    
+
         const activities = [];
-    
+
         // Generate recurring activities
         const currentDate = new Date(startDate);
         while (currentDate <= endDate) {
@@ -60,7 +64,7 @@ export function NewScheduledActivityPage() {
                 // Clone current date and set time
                 const activityDate = new Date(currentDate);
                 activityDate.setHours(hour, minute, 0, 0);
-    
+
                 // Create new activity object
                 activities.push({
                     ...data,
@@ -69,13 +73,13 @@ export function NewScheduledActivityPage() {
                     dateCreated: new Date().toISOString(),
                     signUps: 0,
                     isComplete: false,
-                    directions: useProfileDirection ? direction : data.direction,
+                    directions: useProfileDirection ? direction : customDirection,
                 });
             }
             // Move to the next day
             currentDate.setDate(currentDate.getDate() + 1);
         }
-    
+
         try {
             fetch('http://localhost:3000/api/activities/add-new-scheduled-activity', {
                 method: 'POST',
@@ -94,7 +98,7 @@ export function NewScheduledActivityPage() {
         } catch (error) {
             console.error('Error creating scheduled activity:', error);
             alert('Error creating scheduled activity. Please try again.');
-        } 
+        }
     };
 
     return (
@@ -107,7 +111,7 @@ export function NewScheduledActivityPage() {
                     <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
                         Fill in the details below to create a new scheduled activity.
                     </Typography>
-                    
+
                     <form onSubmit={handleSubmit(onSubmit)}>
                         {/* Activity Name */}
                         <TextField
@@ -123,13 +127,13 @@ export function NewScheduledActivityPage() {
                             {...register('location', { required: 'Activity location is required' })}
                             sx={{ mb: 2 }}
                         />
-                        <FormControlLabel 
-                            value="auto-add-direction" 
-                            control={<Radio 
+                        <FormControlLabel
+                            value="auto-add-direction"
+                            control={<Checkbox
                                 checked={useProfileDirection}
-                                onChange={() => setUseProfileDirection(true)}
-                                disabled={!canCheckbox}/>} 
-                            label="Add Direction In Profile"/>
+                                onChange={(e) => setUseProfileDirection(e.target.checked)}
+                                disabled={!canCheckbox} />}
+                            label="Add Direction In Profile" />
                         {!canCheckbox && (
                             <Box>
                                 <Typography variant='caption'>
@@ -142,10 +146,16 @@ export function NewScheduledActivityPage() {
                             fullWidth
                             label="Direction"
                             disabled={useProfileDirection}
+                            value={useProfileDirection ? direction : customDirection}
+                            onChange={(e) => setCustomDirection(e.target.value)}
                             multiline
                             rows={3}
-                            {...register('direction', { required: 'Activity Direction is required' })}
                             sx={{ mb: 2 }}
+                        />
+                        <input
+                            type="hidden"
+                            {...register('direction')}
+                            value={useProfileDirection ? direction : customDirection}
                         />
                         {/* Activity Description */}
                         <TextField
@@ -237,7 +247,7 @@ export function NewScheduledActivityPage() {
                             {...register('duration', { required: 'Activity duration is required' })}
                             sx={{ mb: 2 }}
                         />
-                        
+
                         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                             <Button variant="contained" color="primary" type='submit' sx={{ px: 4 }}>
                                 Add Activity
@@ -248,11 +258,11 @@ export function NewScheduledActivityPage() {
                             <Typography variant="body2" color="textSecondary">
                                 {`Activity Created: ${new Date().toLocaleString()}`}
                             </Typography>
-                        </Box>                        
+                        </Box>
                     </form>
-                    
+
                 </CardContent>
             </Card>
         </Container>
     );
- }
+}

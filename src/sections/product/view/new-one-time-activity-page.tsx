@@ -1,5 +1,5 @@
 import { useForm, Controller } from 'react-hook-form';
-import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Snackbar, Alert, Slider } from "@mui/material";
+import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Snackbar, Alert, Slider, Checkbox } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
 import { useState, useEffect } from "react";
 
@@ -12,6 +12,8 @@ export function NewOneTimeActivityPage() {
     const [useProfileDirection, setUseProfileDirection] = useState(false);
     const [direction, setDirection] = useState('');
     const [canCheckbox, setCanCheckbox] = useState(false);
+
+    const [customDirection, setCustomDirection] = useState('');
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -66,7 +68,7 @@ export function NewOneTimeActivityPage() {
             signUps: 0,
             isComplete: false,
             frequencyDay: targetDay,
-            directions: useProfileDirection ? direction : data.direction,
+            directions: useProfileDirection ? direction : customDirection,
         });
         fetch('http://localhost:3000/api/activities/add-new-one-time-activity', {
             method: 'POST',
@@ -121,9 +123,9 @@ export function NewOneTimeActivityPage() {
                             />
                             <FormControlLabel
                                 value="auto-add-direction"
-                                control={<Radio
+                                control={<Checkbox
                                     checked={useProfileDirection}
-                                    onChange={() => setUseProfileDirection(true)}
+                                    onChange={(e) => setUseProfileDirection(e.target.checked)}
                                     disabled={!canCheckbox} />}
                                 label="Add Direction In Profile" />
                             {!canCheckbox && (
@@ -138,10 +140,16 @@ export function NewOneTimeActivityPage() {
                                 fullWidth
                                 label="Direction"
                                 disabled={useProfileDirection}
+                                value={useProfileDirection ? direction : customDirection}
+                                onChange={(e) => setCustomDirection(e.target.value)}
                                 multiline
                                 rows={3}
-                                {...register('direction', { required: 'Activity Direction is required' })}
                                 sx={{ mb: 2 }}
+                            />
+                            <input
+                                type="hidden"
+                                {...register('direction')}
+                                value={useProfileDirection ? direction : customDirection}
                             />
                             {/* Activity Description */}
                             <TextField

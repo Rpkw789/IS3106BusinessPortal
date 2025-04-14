@@ -33,6 +33,7 @@ export type ProductItemProps = {
   endDate: string;
   rating: number;
   createdAt: string;
+  directions: string;
 };
 
 export function ProductItem({ product }: { product: ProductItemProps }) {
