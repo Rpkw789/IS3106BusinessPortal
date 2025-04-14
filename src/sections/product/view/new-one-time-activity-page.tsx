@@ -1,9 +1,7 @@
 import { useForm, Controller } from 'react-hook-form';
 import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Snackbar, Alert, Slider } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
-import { useState } from "react";
-import { v4 as uuidv4 } from 'uuid';
-import { start } from 'repl';
+import { useState, useEffect } from "react";
 
 // ----------------------------------------------------------------------
 
@@ -11,9 +9,31 @@ export function NewOneTimeActivityPage() {
     const { register, handleSubmit, control } = useForm();
     const Router = useRouter();
 
+    const [useProfileDirection, setUseProfileDirection] = useState(false);
+    const [direction, setDirection] = useState('');
+    const [canCheckbox, setCanCheckbox] = useState(false);
+
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+
+    useEffect(() => {
+        fetch('http://localhost:3000/api/businesses/profile', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        }).then((response) => response.json())
+            .then((data) => {
+                if (data.status === 'success') {
+                    if (data.business.directions !== "") {
+                        setDirection(data.business.directions);
+                        setCanCheckbox(true);
+                    }
+                }
+            })
+    }, []);
 
     const onSubmit = (data: any) => {
         const startDate = new Date(data.startDate);
@@ -46,6 +66,7 @@ export function NewOneTimeActivityPage() {
             signUps: 0,
             isComplete: false,
             frequencyDay: targetDay,
+            directions: useProfileDirection ? direction : data.direction,
         });
         fetch('http://localhost:3000/api/activities/add-new-one-time-activity', {
             method: 'POST',
@@ -81,13 +102,13 @@ export function NewOneTimeActivityPage() {
                     </Typography>
                     <FormControl>
                         <form onSubmit={handleSubmit(onSubmit)}>
-    
+
                             {/* Activity Name */}
                             <TextField
                                 fullWidth
                                 label="Activity Name"
                                 {...register('name', { required: 'Activity name is required' })}
-    
+
                                 sx={{ mb: 2 }}
                             />
                             {/* Activity Location */}
@@ -95,7 +116,31 @@ export function NewOneTimeActivityPage() {
                                 fullWidth
                                 label="Activity Location"
                                 {...register('location', { required: 'Activity location is required' })}
-    
+
+                                sx={{ mb: 2 }}
+                            />
+                            <FormControlLabel
+                                value="auto-add-direction"
+                                control={<Radio
+                                    checked={useProfileDirection}
+                                    onChange={() => setUseProfileDirection(true)}
+                                    disabled={!canCheckbox} />}
+                                label="Add Direction In Profile" />
+                            {!canCheckbox && (
+                                <Box>
+                                    <Typography variant='caption'>
+                                        No directions found in your profile. Please add directions in your profile first.
+                                    </Typography>
+                                </Box>
+                            )}
+                            {/* Activity Direction */}
+                            <TextField
+                                fullWidth
+                                label="Direction"
+                                disabled={useProfileDirection}
+                                multiline
+                                rows={3}
+                                {...register('direction', { required: 'Activity Direction is required' })}
                                 sx={{ mb: 2 }}
                             />
                             {/* Activity Description */}
@@ -160,13 +205,13 @@ export function NewOneTimeActivityPage() {
                                 {...register('duration', { required: 'Activity duration is required' })}
                                 sx={{ mb: 2 }}
                             />
-    
+
                             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                                 <Button variant="contained" color="primary" type="submit" sx={{ px: 4 }}>
                                     Add Activity
                                 </Button>
                             </Box>
-    
+
                             <Box sx={{ mt: 2 }}>
                                 <Typography variant="body2" color="textSecondary">
                                     {`Activity Created: ${new Date().toLocaleString()}`}

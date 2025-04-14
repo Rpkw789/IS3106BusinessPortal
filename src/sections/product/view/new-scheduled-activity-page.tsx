@@ -1,12 +1,36 @@
 import { Controller, useForm } from 'react-hook-form';
-import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Select, InputLabel, MenuItem, Slider } from "@mui/material";
+import { Box, Button, Container, TextField, Typography, 
+    RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Select, InputLabel, MenuItem, Slider } from "@mui/material";
 import { useRouter } from 'src/routes/hooks';
+import { useEffect, useState } from 'react';
+import { red } from '@mui/material/colors';
 
 // ----------------------------------------------------------------------
 
 export function NewScheduledActivityPage() {
     const { register, handleSubmit, control } = useForm();
+    const [useProfileDirection, setUseProfileDirection] = useState(false);
+    const [direction, setDirection] = useState('');
+    const [canCheckbox, setCanCheckbox] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+        fetch('http://localhost:3000/api/businesses/profile', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        }).then((response) => response.json())
+        .then((data) => {
+            if (data.status === 'success') {
+                if (data.business.directions !== "") {
+                    setDirection(data.business.directions);
+                    setCanCheckbox(true);
+                }
+            }
+        })
+    }, []);
 
     const onSubmit = async (data: any) => {
         const token = localStorage.getItem("token");
@@ -45,6 +69,7 @@ export function NewScheduledActivityPage() {
                     dateCreated: new Date().toISOString(),
                     signUps: 0,
                     isComplete: false,
+                    directions: useProfileDirection ? direction : data.direction,
                 });
             }
             // Move to the next day
@@ -96,6 +121,30 @@ export function NewScheduledActivityPage() {
                             fullWidth
                             label="Activity Location"
                             {...register('location', { required: 'Activity location is required' })}
+                            sx={{ mb: 2 }}
+                        />
+                        <FormControlLabel 
+                            value="auto-add-direction" 
+                            control={<Radio 
+                                checked={useProfileDirection}
+                                onChange={() => setUseProfileDirection(true)}
+                                disabled={!canCheckbox}/>} 
+                            label="Add Direction In Profile"/>
+                        {!canCheckbox && (
+                            <Box>
+                                <Typography variant='caption'>
+                                    No directions found in your profile. Please add directions in your profile first.
+                                </Typography>
+                            </Box>
+                        )}
+                        {/* Activity Direction */}
+                        <TextField
+                            fullWidth
+                            label="Direction"
+                            disabled={useProfileDirection}
+                            multiline
+                            rows={3}
+                            {...register('direction', { required: 'Activity Direction is required' })}
                             sx={{ mb: 2 }}
                         />
                         {/* Activity Description */}
