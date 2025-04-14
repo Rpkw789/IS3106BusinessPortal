@@ -33,8 +33,6 @@ export function NewOneTimeActivityPage() {
         const targetDay = dayMapping[frequencyDay];
 
         const activities: any[] = []; // this is the fix
-
-        const scheduleId = uuidv4();
         const currentDate = new Date(startDate);
         const activityDate = new Date(currentDate);
         activityDate.setHours(hour, minute, 0, 0);
@@ -46,9 +44,6 @@ export function NewOneTimeActivityPage() {
             isOneTime: true,
             dateCreated: new Date().toISOString(),
             signUps: 0,
-            customers: [],
-            scheduleId,
-            rating: 0,
             isComplete: false,
             frequencyDay: targetDay,
         });

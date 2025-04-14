@@ -44,8 +44,6 @@ export function NewScheduledActivityPage() {
                     isOneTime: false,
                     dateCreated: new Date().toISOString(),
                     signUps: 0,
-                    customers: [],
-                    rating: 0,
                     isComplete: false,
                 });
             }

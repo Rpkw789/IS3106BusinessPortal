@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -34,45 +34,47 @@ export function UserView() {
   const [status, filterStatus] = useState('all');
   const [bookings, setBookings] = useState<BookingProp[]>([]);
 
-  fetch('http://localhost:3000/api/bookings/biz',
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    }
-  ).then((response) => response.json())
-    .then((data) => {
-      setBookings(data);
-    })
-    .catch((error) => {
-      console.error('Error fetching bookings:', error);
-    });
+  useEffect(() => {
+    fetch('http://localhost:3000/api/bookings/biz',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    ).then((response) => response.json())
+      .then((data) => {
+        setBookings(data);
+      })
+      .catch((error) => {
+        console.error('Error fetching bookings:', error);
+      });
+  }, [table.selected]);
 
   const dataFiltered: BookingProp[] = applyFilter({
     inputData: bookings,
     comparator: getComparator(table.order, table.orderBy),
     filterName,
-	  status
+    status
   });
 
   const notFound = !dataFiltered.length && !!filterName;
 
   return (
     <DashboardContent>
-      
-	  <BookingsHeader/>
+
+      <BookingsHeader />
 
       <Card>
         <UserTableToolbar
-          numSelected={table.selected.length}
+          selected={table.selected}
           filterName={filterName}
           onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
             setFilterName(event.target.value);
             table.onResetPage();
           }}
-		    onFilterStatus={(value) => {
+          onFilterStatus={(value) => {
             filterStatus(value);
             table.onResetPage();
           }}
@@ -90,16 +92,16 @@ export function UserView() {
                 onSelectAllRows={(checked) =>
                   table.onSelectAllRows(
                     checked,
-                    bookings.map((user) => user.id)
+                    bookings.map((user) => user._id)
                   )
                 }
                 headLabel={[
                   { id: 'customerName', label: 'Customer Name' },
+                  { id: 'contact', label: 'Contact' },
                   { id: 'activityName', label: 'Activity Name' },
                   { id: 'creditSpent', label: 'Credit Spent' },
-                  { id: 'date', label: 'Date Booked'},
-                  { id: 'status', label: 'Status' },
-                  { id: '' },
+                  { id: 'date', label: 'Date Booked' },
+                  { id: 'status', label: 'Status' }
                 ]}
               />
               <TableBody>
@@ -110,10 +112,10 @@ export function UserView() {
                   )
                   .map((row) => (
                     <UserTableRow
-                      key={row.id}
+                      key={row._id}
                       row={row}
-                      selected={table.selected.includes(row.id)}
-                      onSelectRow={() => table.onSelectRow(row.id)}
+                      selected={table.selected.includes(row._id)}
+                      onSelectRow={() => table.onSelectRow(row._id)}
                     />
                   ))}
 

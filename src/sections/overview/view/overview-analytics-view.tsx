@@ -103,11 +103,13 @@ export function OverviewAnalyticsView() {
 			.then((response) => response.json())
 			.then((data) => {
 				if (Array.isArray(data)) {
-					let credit = 0;
+					// let credit = 0;
 					setPieChartData(groupBookingsByActivityPie(data));
-					data.forEach((item) => {
-						credit += item.creditSpent;
-					});
+					// data.forEach((item) => {
+					// 	if (item.status !== "Cancelled") {
+					// 		credit += item.creditSpent;
+					// 	}
+					// });
 				}
 			})
 		fetch(`http://localhost:3000/api/bookings/historyStats${monthQueryStr}`,

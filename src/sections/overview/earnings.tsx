@@ -119,7 +119,8 @@ type TotalEarningsProps = {
 
 export function TotalEarnings({ bookings }: TotalEarningsProps) {
     const cashPerCredit = 10;
-    if (!bookings || bookings.length === 0) {
+    const notCancelledBookings = bookings.filter((booking) => booking.status !== 'Cancelled');
+    if (!notCancelledBookings || notCancelledBookings.length === 0) {
         return (
             <Card sx={{ p: 3, textAlign: 'center', bgcolor: 'grey.100' }}>
                 <Typography variant="h6" color="text.secondary">
@@ -129,7 +130,7 @@ export function TotalEarnings({ bookings }: TotalEarningsProps) {
         );
     }
 
-    const totalCredit = bookings.reduce((acc, booking) => acc + Number(booking.creditSpent), 0);
+    const totalCredit = notCancelledBookings.reduce((acc, booking) => acc + Number(booking.creditSpent), 0);
     const cashEarned = totalCredit * cashPerCredit;
 
     return (

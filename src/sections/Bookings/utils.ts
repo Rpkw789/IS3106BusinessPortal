@@ -82,7 +82,7 @@ export function applyFilter({ inputData, comparator, filterName, status }: Apply
   }
 
   if (status !== 'all') {
-    inputData = inputData.filter((user) => user.status === status);
+    inputData = inputData.filter((user) => user.status.toLowerCase() === status.toLowerCase());
   }
 
   return inputData;
