@@ -36,34 +36,10 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
     const router = useRouter();
 
     const [activity, setActivity] = useState<ProductItemProps>(product);
-    const [rating, setRating] = useState<number>(0);
-    const [ratingExist, setRatingExist] = useState<boolean>(true);
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
-
-    useEffect(() => {
-        const handleIsCompleteChange = () => {
-            const activityEndDate = new Date(activity.startDate);
-            const currentDate = new Date();
-            const isComplete = activityEndDate < currentDate;
-            setActivity((prevActivity) => ({ ...prevActivity, isComplete }));
-        }
-        handleIsCompleteChange();
-    }, [activity.startDate]);
-
-    useEffect(() => {
-        fetch(`http://localhost:3000/api/reviews/calAct/${activity._id}`)
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.status === "success") {
-                    setRating(data.rating);
-                } else {
-                    setRatingExist(false);
-                }
-            })
-    }, [activity._id]);
 
     const onDelete = () => {
         fetch(`http://localhost:3000/api/activities/${product._id}`, {
