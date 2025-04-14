@@ -1,6 +1,8 @@
 import { Controller, useForm } from 'react-hook-form';
-import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Select, InputLabel, MenuItem, Slider } from "@mui/material";
+import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Select, InputLabel, MenuItem, Slider, Snackbar } from "@mui/material";
 import { useRouter } from 'src/routes/hooks';
+import { useState, useEffect } from 'react';
+import { MdPhotoCamera } from "react-icons/md";
 
 // ----------------------------------------------------------------------
 
@@ -8,28 +10,47 @@ export function NewScheduledActivityPage() {
     const { register, handleSubmit, control } = useForm();
     const router = useRouter();
 
-    const onSubmit = async (data: any) => {
+    const [activities, setActivities] = useState<any[]>([]);
+    const [activityImage, setActivityImage] = useState("/default-profile.png");
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [updateData, setUpdateData] = useState<Record<string, any>>({});
+
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+
+    const insertUpdateData = (attributeName: string, value: any) => {
+        setUpdateData((prev) => ({ ...prev, [attributeName]: value }));
+      }
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        setSelectedFile(file);
+    
+        const imageUrl = URL.createObjectURL(file);
+        setActivityImage(activityImage);
+        insertUpdateData("activityImage", activityImage);
+    }
+    };
+
+    const onSubmit = async () => {
         const token = localStorage.getItem("token");
     
-        // Convert startDate and endDate to Date objects
-        const startDate = new Date(data.startDate);
-        const endDate = new Date(data.endDate);
-        const frequencyDay = data.frequencyDay; // Example: "Monday"
-        const timeParts = data.frequencyTime.split(":"); // Extract hours and minutes from input
-        const hour = parseInt(timeParts[0], 10); // Convert to number
-        const minute = parseInt(timeParts[1], 10); // Convert to number
+        const startDate = new Date(updateData.startDate);
+        const endDate = new Date(updateData.endDate);
+        const frequencyDay = updateData.frequencyDay; 
+        const timeParts = updateData.frequencyTime.split(":");
+        const hour = parseInt(timeParts[0], 10);
+        const minute = parseInt(timeParts[1], 10);
     
-        // Map day names to numeric values (Sunday = 0, Monday = 1, ..., Saturday = 6)
         const dayMapping: { [key: string]: number } = {
             "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3,
             "Thursday": 4, "Friday": 5, "Saturday": 6
         };
     
-        const targetDay = dayMapping[frequencyDay]; // Numeric value of chosen day
+        const targetDay = dayMapping[frequencyDay]; 
     
-        const activities = [];
-    
-        // Generate recurring activities
         const currentDate = new Date(startDate);
         while (currentDate <= endDate) {
             if (currentDate.getDay() === targetDay) {
@@ -38,40 +59,42 @@ export function NewScheduledActivityPage() {
                 activityDate.setHours(hour, minute, 0, 0);
     
                 // Create new activity object
-                activities.push({
-                    ...data,
-                    startDate: activityDate.toISOString(), // Set correct date for each occurrence
-                    isOneTime: false,
-                    dateCreated: new Date().toISOString(),
-                    signUps: 0,
-                    customers: [],
-                    rating: 0,
-                    isComplete: false,
+                const formData = new FormData();
+                Object.keys(updateData).forEach(key => {
+                    formData.append(key, updateData[key]);
                 });
+                formData.append("activityImage", activityImage);
+                formData.append("isOneTime", "false");
+                formData.append("dateCreated", new Date().toISOString());
+                formData.append("signUps", "0");
+                formData.append("customers", JSON.stringify([]));
+                formData.append("rating", "0");
+                formData.append("isComplete", "false");
+                formData.append("frequencyDay", targetDay.toString());
+
+                try {
+                    fetch('http://localhost:3000/api/activities/add-new-scheduled-activity', {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: formData,
+                    }).then((response) => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    });
+                    router.push('/activities');
+                } catch (error) {
+                    console.error('Error creating scheduled activity:', error);
+                    alert('Error creating scheduled activity. Please try again.');
+                } 
             }
             // Move to the next day
             currentDate.setDate(currentDate.getDate() + 1);
         }
-    
-        try {
-            fetch('http://localhost:3000/api/activities/add-new-scheduled-activity', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(activities),
-            }).then((response) => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            });
-            router.push('/activities');
-        } catch (error) {
-            console.error('Error creating scheduled activity:', error);
-            alert('Error creating scheduled activity. Please try again.');
-        } 
+
     };
 
     return (
@@ -90,15 +113,17 @@ export function NewScheduledActivityPage() {
                         <TextField
                             fullWidth
                             label="Activity Name"
-                            {...register('name', { required: 'Activity name is required' })}
+                            required
                             sx={{ mb: 2 }}
+                            onChange={(e) => insertUpdateData("name", e.target.value)} 
                         />
                         {/* Activity Location */}
                         <TextField
                             fullWidth
                             label="Activity Location"
-                            {...register('location', { required: 'Activity location is required' })}
+                            required
                             sx={{ mb: 2 }}
+                            onChange={(e) => insertUpdateData("location", e.target.value)}
                         />
                         {/* Activity Description */}
                         <TextField
@@ -106,16 +131,18 @@ export function NewScheduledActivityPage() {
                             label="Activity Description"
                             multiline
                             rows={3}
-                            {...register('description', { required: 'Activity description is required' })}
+                            required
                             sx={{ mb: 2 }}
+                            onChange={(e) => insertUpdateData("description", e.target.value)}
                         />
                         {/* Total Slots */}
                         <TextField
                             fullWidth
                             label="Total Slots"
                             type="number"
-                            {...register('totalSlots', { required: 'Total slots are required' })}
+                            required
                             sx={{ mb: 2 }}
+                            onChange={(e) => insertUpdateData("totalSlots", e.target.value)}
                         />
                         {/* Credit Cost */}
                         <Typography id="credit-cost-slider" gutterBottom>
@@ -128,6 +155,10 @@ export function NewScheduledActivityPage() {
                             render={({ field }) => (
                                 <Slider
                                     {...field}
+                                    onChange={(e, value) => {
+                                        field.onChange(value);
+                                        insertUpdateData("creditCost", value);
+                                    }}
                                     aria-labelledby="credit-cost-slider"
                                     valueLabelDisplay="auto"
                                     step={1}
@@ -142,18 +173,20 @@ export function NewScheduledActivityPage() {
                             fullWidth
                             label="Start Date"
                             type="date"
-                            {...register('startDate', { required: 'Start date is required' })}
+                            required
                             InputLabelProps={{ shrink: true }}
                             sx={{ mb: 2 }}
+                            onChange={(e) => insertUpdateData("startDate", e.target.value)}
                         />
                         {/* End Date */}
                         <TextField
                             fullWidth
                             label="End Date"
                             type="date"
-                            {...register('endDate', { required: 'End date is required' })}
+                            required
                             InputLabelProps={{ shrink: true }}
                             sx={{ mb: 2 }}
+                            onChange={(e) => insertUpdateData("endDate", e.target.value)}
                         />
                         {/* Day Selection */}
                         <FormControl sx={{ mb: 2, minWidth: 480 }}>
@@ -163,7 +196,8 @@ export function NewScheduledActivityPage() {
                                 id="frequencyDay"
                                 defaultValue=""
                                 label="Day"
-                                {...register('frequencyDay', { required: 'Activity day is required' })}
+                                required
+                                onChange={(e) => insertUpdateData("frequencyDay", e.target.value)} 
                             >
                                 <MenuItem value="Monday">Monday</MenuItem>
                                 <MenuItem value="Tuesday">Tuesday</MenuItem>
@@ -178,8 +212,9 @@ export function NewScheduledActivityPage() {
                         <TextField
                             fullWidth
                             label="Activity Start Time (HH:MM in 24-hour format)"
-                            {...register('frequencyTime', { required: 'Activity time is required' })}
+                            required
                             sx={{ mb: 2 }}
+                            onChange={(e) => insertUpdateData("frequencyTime", e.target.value)}
                         />
                         {/* Activity Duration */}
                         <TextField
@@ -187,9 +222,26 @@ export function NewScheduledActivityPage() {
                             label="Activity Duration (in hours)"
                             type="number"
                             inputProps={{ step: "0.1", min: "0.5" }}
-                            {...register('duration', { required: 'Activity duration is required' })}
+                            required
                             sx={{ mb: 2 }}
+                            onChange={(e) => insertUpdateData("duration", e.target.value)}
                         />
+
+                        {/* Activity Image */}
+                        <Button variant="outlined" component="label">
+                            <MdPhotoCamera size={18} color="black" />
+                            <Typography sx={{ ml: 1 }} variant="body2">Upload Image</Typography>
+                            <input
+                                type="file"
+                                name="file"
+                                hidden
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                            />
+                        </Button>
+                        <Box sx={{ mt: 2, mb: 2 }}>
+                            <img src={activityImage} alt="Preview" style={{ width: '100%', height: 'auto', borderRadius: '8px' }} />
+                        </Box>
                         
                         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                             <Button variant="contained" color="primary" type='submit' sx={{ px: 4 }}>

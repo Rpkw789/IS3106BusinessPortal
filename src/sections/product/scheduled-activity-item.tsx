@@ -10,21 +10,20 @@ export function ScheduledActivityItem({ activity }: { activity:  any}) {
     const signUps = parseInt(activity.signUps, 10);
     const vacancies = totalSlots - signUps;
 
-
-    // const renderImg = (
-    //     <Box
-    //         component="img"
-    //         alt={activity.name}
-    //         src={activity.coverUrl}
-    //         sx={{
-    //             top: 0,
-    //             width: 1,
-    //             height: 1,
-    //             objectFit: 'cover',
-    //             position: 'absolute',
-    //         }}
-    //     />
-    // );
+    const renderImg = (
+        <Box
+            component="img"
+            alt={activity.name}
+            src={activity.activityImage}
+            sx={{
+                top: 0,
+                width: 1,
+                height: 1,
+                objectFit: 'cover',
+                position: 'absolute',
+            }}
+        />
+    );
 
     const renderName = (
         <Typography variant="subtitle1" noWrap>
@@ -66,8 +65,8 @@ export function ScheduledActivityItem({ activity }: { activity:  any}) {
             onClick={() => router.push(`/activities/${activity._id}`)}
             sx={{ cursor: 'pointer', position: 'relative' }}
         >
-            {/* {renderImg} */}
             <CardContent sx={{ pt: 2, pb: 3 }}>
+                {renderImg}
                 {renderName}
                 {renderLocation}
                 {renderDate}
