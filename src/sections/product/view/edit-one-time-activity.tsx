@@ -1,5 +1,5 @@
 import { useForm, Controller, set } from 'react-hook-form';
-import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Snackbar, Alert, Slider } from "@mui/material";
+import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Snackbar, Alert, Slider, Checkbox } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from 'uuid';
@@ -11,6 +11,7 @@ export type ActivityProp = {
     name: string;
     location: string;
     description: string;
+    directions: string;
     totalSlots: number;
     startDate: string;
     endDate: string;
@@ -26,14 +27,46 @@ export type ActivityProp = {
 };
 
 export function EditNewOneTimeActivityPage() {
-    const { register, handleSubmit, control } = useForm();
+    const { register, handleSubmit, control, setValue } = useForm();
     const Router = useRouter();
     const { activityId } = useParams();
+    const [useProfileDirection, setUseProfileDirection] = useState(false);
+    const [canCheckbox, setCanCheckbox] = useState(false);
+    const [direction, setDirection] = useState("");
+
     const [activities, setActivities] = useState<ActivityProp>();
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+
+    useEffect(() => {
+        if (useProfileDirection && direction) {
+            // Update activities state
+            handleActivityChange("directions", direction);
+    
+            // Update form state
+            setValue("directions", direction);
+        }
+    }, [useProfileDirection, direction, setValue]);
+    
+    useEffect(() => {
+        fetch('http://localhost:3000/api/businesses/profile', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        }).then((response) => response.json())
+            .then((data) => {
+                if (data.status === 'success') {
+                    if (data.business.directions !== "") {
+                        setDirection(data.business.directions);
+                        setCanCheckbox(true);
+                    }
+                }
+            })
+    }, []);
 
     useEffect(() => {
         fetch(`http://localhost:3000/api/activities/${activityId}`, {
@@ -48,8 +81,6 @@ export function EditNewOneTimeActivityPage() {
                 setActivities(data);
             });
     }, [activityId]);
-
-    console.log("Activities", activities);
     if (!activities) {
         return <div>Loading...</div>;
     }
@@ -76,12 +107,13 @@ export function EditNewOneTimeActivityPage() {
         const currentDate = new Date(startDate);
         const activityDate = new Date(currentDate);
         activityDate.setHours(hour, minute, 0, 0);
-
+        
         setActivities({
             ...activities, ...data,
             startDate: activityDate.toISOString(),
             endDate: activityDate.toISOString(),
             frequencyDay: targetDay,
+            directions: useProfileDirection ? direction : data.directions,
         });
         fetch(`http://localhost:3000/api/activities/${activityId}`, {
             method: 'PUT',
@@ -153,7 +185,46 @@ export function EditNewOneTimeActivityPage() {
                                     />
                                 )}
                             />
-
+                            <FormControlLabel
+                                value="auto-add-direction"
+                                control={
+                                    <Checkbox
+                                        checked={useProfileDirection}
+                                        onChange={(e) => setUseProfileDirection(e.target.checked)}
+                                        disabled={!canCheckbox}
+                                    />
+                                }
+                                label="Add Direction In Profile"
+                            />
+                            {!canCheckbox && (
+                                <Box>
+                                    <Typography variant='caption'>
+                                        No directions found in your profile. Please add directions in your profile first.
+                                    </Typography>
+                                </Box>
+                            )}
+                            <Controller
+                                name="directions"
+                                control={control}
+                                defaultValue={useProfileDirection ? direction : activities.directions}
+                                rules={{ required: 'Activity Direction is required' }}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        fullWidth
+                                        label="Direction"
+                                        disabled={useProfileDirection}
+                                        multiline
+                                        rows={3}
+                                        value={useProfileDirection ? direction : field.value}
+                                        onChange={(e) => {
+                                            field.onChange(e);
+                                            handleActivityChange("directions", e.target.value);
+                                        }}
+                                        sx={{ mb: 2 }}
+                                    />
+                                )}
+                            />
                             {/* Activity Description */}
                             <Controller
                                 name="description"

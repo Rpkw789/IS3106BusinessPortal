@@ -1,5 +1,5 @@
 import { useForm, Controller } from 'react-hook-form';
-import { Box, Button, Container, TextField, Typography, FormControl, FormControlLabel, Card, CardContent, Snackbar, Alert, Slider, Checkbox } from "@mui/material";
+import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Snackbar, Alert, Slider, Checkbox } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
 import { useEffect, useState } from "react";
 import { MdPhotoCamera } from "react-icons/md";
@@ -13,6 +13,12 @@ export function NewOneTimeActivityPage() {
     const [updateData, setUpdateData] = useState<Record<string, any>>({ creditCost: 5 });
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [activityImage, setActivityImage] = useState<File | null>(null);
+
+    const [useProfileDirection, setUseProfileDirection] = useState(false);
+    const [direction, setDirection] = useState('');
+    const [canCheckbox, setCanCheckbox] = useState(false);
+
+    const [customDirection, setCustomDirection] = useState('');
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -34,6 +40,24 @@ export function NewOneTimeActivityPage() {
         // Here, you can also upload the image to an API
 
     };
+      
+          useEffect(() => {
+        fetch('http://localhost:3000/api/businesses/profile', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        }).then((response) => response.json())
+            .then((data) => {
+                if (data.status === 'success') {
+                    if (data.business.directions !== "") {
+                        setDirection(data.business.directions);
+                        setCanCheckbox(true);
+                    }
+                }
+            })
+    }, []);
 
     const onSubmit = async () => {
         try {
@@ -65,7 +89,8 @@ export function NewOneTimeActivityPage() {
                 customers: [],
                 rating: 0,
                 isComplete: false,
-                frequencyDay: targetDay.toString()
+                frequencyDay: targetDay.toString(),
+                directions: useProfileDirection ? direction : customDirection,
             }
             const activities = [activity];
 
@@ -116,6 +141,7 @@ export function NewOneTimeActivityPage() {
                                 fullWidth
                                 label="Activity Name"
                                 required
+                                {...register('name', { required: 'Activity name is required' })}
                                 sx={{ mb: 2 }}
                                 onChange={(e) => insertUpdateData("name", e.target.value)}
                             />
@@ -124,8 +150,40 @@ export function NewOneTimeActivityPage() {
                                 fullWidth
                                 label="Activity Location"
                                 required
+                                {...register('location', { required: 'Activity location is required' })}
+                                 onChange={(e) => insertUpdateData("location", e.target.value)}
                                 sx={{ mb: 2 }}
-                                onChange={(e) => insertUpdateData("location", e.target.value)}
+                            />
+                            <FormControlLabel
+                                value="auto-add-direction"
+                                control={<Checkbox
+                                    checked={useProfileDirection}
+                                    onChange={(e) => setUseProfileDirection(e.target.checked)}
+                                    disabled={!canCheckbox} />}
+                                label="Add Direction In Profile" />
+                            {!canCheckbox && (
+                                <Box>
+                                    <Typography variant='caption'>
+                                        No directions found in your profile. Please add directions in your profile first.
+                                    </Typography>
+                                </Box>
+                            )}
+                            {/* Activity Direction */}
+                            <TextField
+                                fullWidth
+                                label="Direction"
+                                disabled={useProfileDirection}
+                                value={useProfileDirection ? direction : customDirection}
+                                onChange={(e) => setCustomDirection(e.target.value)}
+                                multiline
+                                rows={3}
+                                sx={{ mb: 2 }}
+                              
+                            />
+                            <input
+                                type="hidden"
+                                {...register('direction')}
+                                value={useProfileDirection ? direction : customDirection}
                             />
                             {/* Activity Description */}
                             <TextField

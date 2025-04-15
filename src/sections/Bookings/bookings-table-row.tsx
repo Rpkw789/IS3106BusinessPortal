@@ -17,9 +17,10 @@ import { Iconify } from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 export type BookingProp = {
-  id: string;
+  _id: string;
   customerName: string;
   activityName: string;
+  contact: string;
   status: string;
   creditSpent: Number;
   bookingDate: string;
@@ -35,7 +36,7 @@ type UserTableRowProps = {
 };
 
 export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) {
-
+  console.log(row);
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
@@ -51,6 +52,7 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
           </Box>
         </TableCell>
 
+        <TableCell>{row.contact}</TableCell>
         <TableCell>{row.activityName}</TableCell>
 
         <TableCell>{row.creditSpent.valueOf()}</TableCell>
@@ -60,7 +62,7 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
         </TableCell>
 
         <TableCell>
-          <Label color={(row.status === 'cancelled' && 'error') || 'success'}>{row.status}</Label>
+          <Label color={(row.status === 'Cancelled' && 'error') || 'success'}>{row.status}</Label>
         </TableCell>
       </TableRow>
     </>

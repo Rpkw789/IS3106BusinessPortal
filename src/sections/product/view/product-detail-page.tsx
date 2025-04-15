@@ -36,34 +36,10 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
     const router = useRouter();
 
     const [activity, setActivity] = useState<ProductItemProps>(product);
-    const [rating, setRating] = useState<number>(0);
-    const [ratingExist, setRatingExist] = useState<boolean>(true);
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
-
-    useEffect(() => {
-        const handleIsCompleteChange = () => {
-            const activityEndDate = new Date(activity.startDate);
-            const currentDate = new Date();
-            const isComplete = activityEndDate < currentDate;
-            setActivity((prevActivity) => ({ ...prevActivity, isComplete }));
-        }
-        handleIsCompleteChange();
-    }, [activity.startDate]);
-
-    useEffect(() => {
-        fetch(`http://localhost:3000/api/reviews/calAct/${activity._id}`)
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.status === "success") {
-                    setRating(data.rating);
-                } else {
-                    setRatingExist(false);
-                }
-            })
-    }, [activity._id]);
 
     const onDelete = () => {
         fetch(`http://localhost:3000/api/activities/${product._id}`, {
@@ -107,15 +83,7 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
                         <Typography variant="body1"><strong>Credit Cost:</strong> {activity.creditCost}</Typography>
                         <Typography variant="body1"><strong>Total Slots:</strong> {activity.totalSlots} (Signed Up: {activity.signUps})</Typography>
                         <Typography variant="body1"><strong>Description:</strong> {activity.description}</Typography>
-                        <Divider sx={{ my: 1 }} />
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body1"><strong>Rating:</strong></Typography>
-                            {ratingExist ? (
-                                <Rating value={ rating ?? 3 } precision={0.5} readOnly />
-                            ) : (
-                                <Typography variant="body2" color="text.secondary">No rating available yet</Typography>
-                            )}
-                        </Box>
+                        <Typography variant="body1"><strong>Directions:</strong> {activity.directions}</Typography>
                     </Stack>
                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
                         <Button variant="contained" color="secondary" onClick={() => router.push(`/activities/${activity._id}/customers`)}>

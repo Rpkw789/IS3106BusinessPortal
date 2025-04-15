@@ -80,6 +80,7 @@ export function groupBookingsByActivity(bookings: BookingProp[], cashPerCredit: 
 	if (!bookings || bookings.length === 0) return [];
 	const grouped: Record<string, GroupedBooking> = {};
 	bookings.forEach((booking) => {
+		if (booking.status === 'Cancelled') return;
 		if (!grouped[booking.activityId]) {
 			grouped[booking.activityId] = {
 				activityName: booking.activityName,
@@ -104,6 +105,7 @@ export function groupBookingsByActivityPie(bookings: BookingProp[], cashPerCredi
 	if (!bookings || bookings.length === 0) return [];
 	const grouped: Record<string, GroupedBookingPie> = {};
 	bookings.forEach((booking) => {
+		if (booking.status === 'Cancelled') return;
 		if (!grouped[booking.activityId]) {
 			grouped[booking.activityId] = {
 				activityName: booking.activityName,

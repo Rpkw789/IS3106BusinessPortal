@@ -1,13 +1,18 @@
 import { Controller, useForm } from 'react-hook-form';
-import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Select, InputLabel, MenuItem, Slider, Snackbar } from "@mui/material";
+import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Select, InputLabel, MenuItem, Slider, Snackbar, Checkbox } from "@mui/material";
 import { useRouter } from 'src/routes/hooks';
 import { useState, useEffect } from 'react';
 import { MdPhotoCamera } from "react-icons/md";
+import { red } from '@mui/material/colors';
 
 // ----------------------------------------------------------------------
 
 export function NewScheduledActivityPage() {
     const { register, handleSubmit, control } = useForm();
+    const [useProfileDirection, setUseProfileDirection] = useState(false);
+    const [direction, setDirection] = useState('');
+    const [canCheckbox, setCanCheckbox] = useState(false);
+    const [customDirection, setCustomDirection] = useState('');
     const router = useRouter();
 
     const [updateData, setUpdateData] = useState<Record<string, any>>({ creditCost: 5 });
@@ -21,6 +26,24 @@ export function NewScheduledActivityPage() {
     const insertUpdateData = (attributeName: string, value: any) => {
         setUpdateData((prev) => ({ ...prev, [attributeName]: value }));
     }
+      
+          useEffect(() => {
+        fetch('http://localhost:3000/api/businesses/profile', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        }).then((response) => response.json())
+            .then((data) => {
+                if (data.status === 'success') {
+                    if (data.business.directions !== "") {
+                        setDirection(data.business.directions);
+                        setCanCheckbox(true);
+                    }
+                }
+            })
+    }, []);
 
     const onSubmit = async () => {
         const token = localStorage.getItem("token");
@@ -31,7 +54,6 @@ export function NewScheduledActivityPage() {
         const timeParts = updateData.frequencyTime.split(":");
         const hour = parseInt(timeParts[0], 10);
         const minute = parseInt(timeParts[1], 10);
-
         const dayMapping: { [key: string]: number } = {
             "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3,
             "Thursday": 4, "Friday": 5, "Saturday": 6
@@ -44,24 +66,22 @@ export function NewScheduledActivityPage() {
         if (activityImage) {
             formData.append("activityImage", activityImage);
         }
-
         const currentDate = new Date(startDate);
         while (currentDate <= endDate) {
             if (currentDate.getDay() === targetDay) {
                 // Clone current date and set time
                 const activityDate = new Date(currentDate);
                 activityDate.setHours(hour, minute, 0, 0);
-
+              
                 const activity = {
                     ...updateData,
                     isOneTime: false,
                     dateCreated: new Date(),
                     signUps: 0,
-                    customers: [],
-                    rating: 0,
                     isComplete: false,
                     frequencyDay: targetDay.toString(),
-                    startDate: currentDate
+                    startDate: currentDate,
+                    directions: useProfileDirection ? direction : customDirection,
                 }
 
                 activities.push(activity);
@@ -69,7 +89,7 @@ export function NewScheduledActivityPage() {
             // Move to the next day
             currentDate.setDate(currentDate.getDate() + 1);
         }
-
+      
         // @ts-ignore
         formData.append("activities", JSON.stringify(activities));
 
@@ -104,7 +124,6 @@ export function NewScheduledActivityPage() {
         setSelectedImage(imageUrl);
 
         // Here, you can also upload the image to an API
-
     };
 
     return (
@@ -134,6 +153,36 @@ export function NewScheduledActivityPage() {
                             required
                             sx={{ mb: 2 }}
                             onChange={(e) => insertUpdateData("location", e.target.value)}
+                        />
+                        <FormControlLabel
+                            value="auto-add-direction"
+                            control={<Checkbox
+                                checked={useProfileDirection}
+                                onChange={(e) => setUseProfileDirection(e.target.checked)}
+                                disabled={!canCheckbox} />}
+                            label="Add Direction In Profile" />
+                        {!canCheckbox && (
+                            <Box>
+                                <Typography variant='caption'>
+                                    No directions found in your profile. Please add directions in your profile first.
+                                </Typography>
+                            </Box>
+                        )}
+                        {/* Activity Direction */}
+                        <TextField
+                            fullWidth
+                            label="Direction"
+                            disabled={useProfileDirection}
+                            value={useProfileDirection ? direction : customDirection}
+                            onChange={(e) => setCustomDirection(e.target.value)}
+                            multiline
+                            rows={3}
+                            sx={{ mb: 2 }}
+                        />
+                        <input
+                            type="hidden"
+                            {...register('direction')}
+                            value={useProfileDirection ? direction : customDirection}
                         />
                         {/* Activity Description */}
                         <TextField
@@ -236,7 +285,6 @@ export function NewScheduledActivityPage() {
                             sx={{ mb: 2 }}
                             onChange={(e) => insertUpdateData("duration", e.target.value)}
                         />
-
                         {/* Activity Image */}
                         <Button variant="outlined" component="label">
                             <MdPhotoCamera size={18} color="black" />
