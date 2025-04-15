@@ -41,7 +41,7 @@ export function NewOneTimeActivityPage() {
 
     };
       
-          useEffect(() => {
+        useEffect(() => {
         fetch('http://localhost:3000/api/businesses/profile', {
             method: 'GET',
             headers: {
