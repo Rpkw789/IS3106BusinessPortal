@@ -22,22 +22,17 @@ export const navData = [
     title: 'Activities',
     path: '/activities',
     icon: icon('ic-cart'),
-    info: (
-      <Label color="error" variant="inverted">
-        +3
-      </Label>
-    ),
   },
   // {
   //   title: 'Sign in',
   //   path: '/sign-in',
   //   icon: icon('ic-lock'),
   // },
-  // {
-  //   title: 'Blog',
-  //   path: '/blog',
-  //   icon: icon('ic-blog'),
-  // },
+  {
+    title: 'Schedules',
+    path: '/schedules',
+    icon: icon('clock'),
+  },
   //
   // {
   //   title: 'Not found',
