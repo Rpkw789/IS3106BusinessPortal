@@ -85,7 +85,6 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
 
   };
 
-
   return (
     <Card style={{ margin: 20 }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>

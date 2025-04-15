@@ -1,13 +1,18 @@
 import { useForm, Controller } from 'react-hook-form';
 import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Snackbar, Alert, Slider, Checkbox } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { MdPhotoCamera } from "react-icons/md";
 
 // ----------------------------------------------------------------------
 
 export function NewOneTimeActivityPage() {
     const { register, handleSubmit, control } = useForm();
-    const Router = useRouter();
+    const router = useRouter();
+
+    const [updateData, setUpdateData] = useState<Record<string, any>>({ creditCost: 5 });
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [activityImage, setActivityImage] = useState<File | null>(null);
 
     const [useProfileDirection, setUseProfileDirection] = useState(false);
     const [direction, setDirection] = useState('');
@@ -19,7 +24,24 @@ export function NewOneTimeActivityPage() {
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
-    useEffect(() => {
+    const insertUpdateData = (attributeName: string, value: any) => {
+        setUpdateData((prev) => ({ ...prev, [attributeName]: value }));
+    }
+
+    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setActivityImage(file);
+        // Create a URL for preview
+        const imageUrl = URL.createObjectURL(file);
+        setSelectedImage(imageUrl);
+
+        // Here, you can also upload the image to an API
+
+    };
+      
+          useEffect(() => {
         fetch('http://localhost:3000/api/businesses/profile', {
             method: 'GET',
             headers: {
@@ -37,60 +59,69 @@ export function NewOneTimeActivityPage() {
             })
     }, []);
 
-    const onSubmit = (data: any) => {
-        const startDate = new Date(data.startDate);
-        const endDate = new Date(data.startDate);
-        const date = new Date(data.startDate);
-        const frequencyDay = date.toLocaleString('en-US', { weekday: 'long' });
-        const timeParts = data.frequencyTime.split(":"); // Extract hours and minutes from input
-        const hour = parseInt(timeParts[0], 10); // Convert to number
-        const minute = parseInt(timeParts[1], 10); // Convert to number
+    const onSubmit = async () => {
+        try {
+            const startDate = new Date(updateData.startDate);
+            const timeParts = updateData.frequencyTime.split(":");
+            const hour = parseInt(timeParts[0], 10);
+            const minute = parseInt(timeParts[1], 10);
 
-        // Map day names to numeric values (Sunday = 0, Monday = 1, ..., Saturday = 6)
-        const dayMapping: { [key: string]: number } = {
-            "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3,
-            "Thursday": 4, "Friday": 5, "Saturday": 6
-        };
+            const frequencyDay = startDate.toLocaleString('en-US', { weekday: 'long' });
+            const dayMapping: { [key: string]: number } = {
+                Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
+                Thursday: 4, Friday: 5, Saturday: 6
+            };
+            const targetDay = dayMapping[frequencyDay];
 
-        const targetDay = dayMapping[frequencyDay];
+            const activityDate = new Date(startDate);
+            activityDate.setHours(hour, minute, 0, 0);
 
-        const activities: any[] = []; // this is the fix
-        const currentDate = new Date(startDate);
-        const activityDate = new Date(currentDate);
-        activityDate.setHours(hour, minute, 0, 0);
+            const formData = new FormData();
+            if (activityImage) {
+                formData.append("activityImage", activityImage);
+            }
 
-        activities.push({
-            ...data,
-            startDate: activityDate.toISOString(),
-            endDate: activityDate.toISOString(),
-            isOneTime: true,
-            dateCreated: new Date().toISOString(),
-            signUps: 0,
-            isComplete: false,
-            frequencyDay: targetDay,
-            directions: useProfileDirection ? direction : customDirection,
-        });
-        fetch('http://localhost:3000/api/activities/add-new-one-time-activity', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-            body: JSON.stringify(activities),
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    setSnackbarMessage(data.message);
-                    setSnackbarSeverity("error");
-                    setOpenSnackbar(true);
-                } else {
-                    setSnackbarMessage(data.message);
-                    setSnackbarSeverity("success");
-                    setOpenSnackbar(true);
-                    Router.push('/activities');
+            const activity = {
+                ...updateData,
+                isOneTime: true,
+                dateCreated: new Date(),
+                signUps: 0,
+                customers: [],
+                rating: 0,
+                isComplete: false,
+                frequencyDay: targetDay.toString(),
+                directions: useProfileDirection ? direction : customDirection,
+            }
+            const activities = [activity];
+
+            // @ts-ignore
+            formData.append("activities", JSON.stringify(activities));
+
+            fetch(`http://localhost:3000/api/activities/add-new-one-time-activity`, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`,
                 }
-            });
-    }
+            }).then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to create activity. Please try again.");
+                }
+                return response;
+            }).then((result) => {
+                setSnackbarMessage("Activity created successfully!");
+                setSnackbarSeverity("success");
+                setOpenSnackbar(true);
+                router.push('/activities');
+            })
+
+        } catch (error: any) {
+            console.error("Something went wrong:", error);
+            setSnackbarMessage(error.message || "An error occurred");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+        }
+    };
 
     return (
         <Container maxWidth="sm">
@@ -109,16 +140,18 @@ export function NewOneTimeActivityPage() {
                             <TextField
                                 fullWidth
                                 label="Activity Name"
+                                required
                                 {...register('name', { required: 'Activity name is required' })}
-
                                 sx={{ mb: 2 }}
+                                onChange={(e) => insertUpdateData("name", e.target.value)}
                             />
                             {/* Activity Location */}
                             <TextField
                                 fullWidth
                                 label="Activity Location"
+                                required
                                 {...register('location', { required: 'Activity location is required' })}
-
+                                 onChange={(e) => insertUpdateData("location", e.target.value)}
                                 sx={{ mb: 2 }}
                             />
                             <FormControlLabel
@@ -145,6 +178,7 @@ export function NewOneTimeActivityPage() {
                                 multiline
                                 rows={3}
                                 sx={{ mb: 2 }}
+                              
                             />
                             <input
                                 type="hidden"
@@ -155,20 +189,22 @@ export function NewOneTimeActivityPage() {
                             <TextField
                                 fullWidth
                                 label="Activity Description"
+                                required
                                 multiline
                                 rows={3}
-                                {...register('description', { required: 'Activity description is required' })}
                                 sx={{ mb: 2 }}
+                                onChange={(e) => insertUpdateData("description", e.target.value)}
                             />
                             {/* Total Slots */}
                             <TextField
                                 fullWidth
                                 label="Total Slots"
+                                required
                                 type="number"
-                                {...register('totalSlots', { required: 'Total slots are required' })}
                                 sx={{ mb: 2 }}
+                                onChange={(e) => insertUpdateData("totalSlots", e.target.value)}
                             />
-                            {/* Credit Cost - edit to make it a form? not sure if react recognises this as input */}
+                            {/* Credit Cost */}
                             <Typography id="credit-cost-slider" gutterBottom>
                                 Credit Cost
                             </Typography>
@@ -179,6 +215,10 @@ export function NewOneTimeActivityPage() {
                                 render={({ field }) => (
                                     <Slider
                                         {...field}
+                                        onChange={(e, value) => {
+                                            field.onChange(value);
+                                            insertUpdateData("creditCost", value);
+                                        }}
                                         aria-labelledby="credit-cost-slider"
                                         valueLabelDisplay="auto"
                                         step={1}
@@ -193,26 +233,44 @@ export function NewOneTimeActivityPage() {
                                 fullWidth
                                 label="Activity Date"
                                 type="date"
-                                {...register('startDate', { required: 'Activity date is required' })}
+                                required
                                 InputLabelProps={{ shrink: true }}
                                 sx={{ mb: 2 }}
+                                onChange={(e) => insertUpdateData("startDate", e.target.value)}
                             />
                             {/* Activity Time */}
                             <TextField
                                 fullWidth
                                 label="Start Time of Activity (HH:MM)"
-                                {...register('frequencyTime', { required: 'Activity time is required' })}
+                                required
                                 sx={{ mb: 2 }}
+                                onChange={(e) => insertUpdateData("frequencyTime", e.target.value)}
                             />
                             {/* Activity Duration */}
                             <TextField
                                 fullWidth
                                 label="Activity Duration"
+                                required
                                 type="number"
                                 inputProps={{ step: "0.01", min: "0" }}
-                                {...register('duration', { required: 'Activity duration is required' })}
                                 sx={{ mb: 2 }}
+                                onChange={(e) => insertUpdateData("duration", e.target.value)}
                             />
+                            {/* Activity Image */}
+                            <Button variant="outlined" component="label">
+                                <MdPhotoCamera size={18} color="black" />
+                                <Typography sx={{ ml: 1 }} variant="body2">Upload Image</Typography>
+                                <input
+                                    type="file"
+                                    name="file"
+                                    hidden
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                />
+                            </Button>
+                            <Box sx={{ mt: 2, mb: 2 }}>
+                                {selectedImage && (<img src={selectedImage} alt="Preview" style={{ width: '100%', height: 'auto', borderRadius: '8px' }} />)}
+                            </Box>
 
                             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                                 <Button variant="contained" color="primary" type="submit" sx={{ px: 4 }}>
