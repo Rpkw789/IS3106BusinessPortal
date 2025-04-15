@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { Card, TableBody, TableContainer, TablePagination, Typography } from "@mui/material";
+import { DashboardContent } from 'src/layouts/dashboard';
 import Table from '@mui/material/Table';
 import { Scrollbar } from "src/components/scrollbar";
 import { TableEmptyRows } from "src/sections/Bookings/table-empty-rows";
@@ -31,9 +32,10 @@ export function SchedulesViewPage() {
     
     return (
         <>
+        <DashboardContent>
         <SchedulesHeader />
 
-        <Card sx={{ ml : 2, mr : 2, mb: 5}}>
+        <Card>
             <SchedulesTableToolbar
                 selected={table.selected}
                 filterName={filterName}
@@ -97,17 +99,18 @@ export function SchedulesViewPage() {
                 </TableContainer>
             </Scrollbar>
             
-        </Card>
+            <TablePagination
+              component="div"
+              page={table.page}
+              count={dataFiltered.length}
+              rowsPerPage={table.rowsPerPage}
+              onPageChange={table.onChangePage}
+              rowsPerPageOptions={[5, 10, 25]}
+              onRowsPerPageChange={table.onChangeRowsPerPage}
+            />
 
-        <TablePagination
-            component="div"
-            page={table.page}
-            count={dataFiltered.length}
-            rowsPerPage={table.rowsPerPage}
-            onPageChange={table.onChangePage}
-            rowsPerPageOptions={[5, 10, 25]}
-            onRowsPerPageChange={table.onChangeRowsPerPage}
-        />
+        </Card>
+        </DashboardContent>
         </>
     )
 }

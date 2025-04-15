@@ -5,7 +5,7 @@ import { _roles, _roleType, _users } from 'src/_mock';
 export function SchedulesHeader() {
 
     return (
-        <Box display="flex" alignItems="center" mb={5} ml={3}>
+        <Box display="flex" alignItems="center" mb={5}>
             <Typography variant="h4" flexGrow={1}>
             Schedules
             </Typography>
