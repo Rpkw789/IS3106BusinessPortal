@@ -10,10 +10,9 @@ export function NewScheduledActivityPage() {
     const { register, handleSubmit, control } = useForm();
     const router = useRouter();
 
-    const [activities, setActivities] = useState<any[]>([]);
-    const [activityImage, setActivityImage] = useState("/default-profile.png");
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [updateData, setUpdateData] = useState<Record<string, any>>({});
+    const [updateData, setUpdateData] = useState<Record<string, any>>({ creditCost: 5 });
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [activityImage, setActivityImage] = useState<File | null>(null);
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -21,79 +20,90 @@ export function NewScheduledActivityPage() {
 
     const insertUpdateData = (attributeName: string, value: any) => {
         setUpdateData((prev) => ({ ...prev, [attributeName]: value }));
-      }
-
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-        const file = e.target.files[0];
-        setSelectedFile(file);
-    
-        const imageUrl = URL.createObjectURL(file);
-        setActivityImage(activityImage);
-        insertUpdateData("activityImage", activityImage);
     }
-    };
 
     const onSubmit = async () => {
         const token = localStorage.getItem("token");
-    
+
         const startDate = new Date(updateData.startDate);
         const endDate = new Date(updateData.endDate);
-        const frequencyDay = updateData.frequencyDay; 
+        const frequencyDay = updateData.frequencyDay;
         const timeParts = updateData.frequencyTime.split(":");
         const hour = parseInt(timeParts[0], 10);
         const minute = parseInt(timeParts[1], 10);
-    
+
         const dayMapping: { [key: string]: number } = {
             "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3,
             "Thursday": 4, "Friday": 5, "Saturday": 6
         };
-    
-        const targetDay = dayMapping[frequencyDay]; 
-    
+
+        const targetDay = dayMapping[frequencyDay];
+
+        const formData = new FormData();
+        const activities = [];
+        if (activityImage) {
+            formData.append("activityImage", activityImage);
+        }
+
         const currentDate = new Date(startDate);
         while (currentDate <= endDate) {
             if (currentDate.getDay() === targetDay) {
                 // Clone current date and set time
                 const activityDate = new Date(currentDate);
                 activityDate.setHours(hour, minute, 0, 0);
-    
-                // Create new activity object
-                const formData = new FormData();
-                Object.keys(updateData).forEach(key => {
-                    formData.append(key, updateData[key]);
-                });
-                formData.append("activityImage", activityImage);
-                formData.append("isOneTime", "false");
-                formData.append("dateCreated", new Date().toISOString());
-                formData.append("signUps", "0");
-                formData.append("customers", JSON.stringify([]));
-                formData.append("rating", "0");
-                formData.append("isComplete", "false");
-                formData.append("frequencyDay", targetDay.toString());
 
-                try {
-                    fetch('http://localhost:3000/api/activities/add-new-scheduled-activity', {
-                        method: 'POST',
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                        body: formData,
-                    }).then((response) => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    });
-                    router.push('/activities');
-                } catch (error) {
-                    console.error('Error creating scheduled activity:', error);
-                    alert('Error creating scheduled activity. Please try again.');
-                } 
+                const activity = {
+                    ...updateData,
+                    isOneTime: false,
+                    dateCreated: new Date(),
+                    signUps: 0,
+                    customers: [],
+                    rating: 0,
+                    isComplete: false,
+                    frequencyDay: targetDay.toString(),
+                    startDate: currentDate
+                }
+
+                activities.push(activity);
             }
             // Move to the next day
             currentDate.setDate(currentDate.getDate() + 1);
         }
+
+        // @ts-ignore
+        formData.append("activities", JSON.stringify(activities));
+
+        try {
+            fetch('http://localhost:3000/api/activities/add-new-scheduled-activity', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: formData,
+            }).then((response) => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            });
+            router.push('/activities');
+        } catch (error) {
+            console.error('Error creating scheduled activity:', error);
+            alert('Error creating scheduled activity. Please try again.');
+        }
+
+    };
+
+    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setActivityImage(file);
+        // Create a URL for preview
+        const imageUrl = URL.createObjectURL(file);
+        setSelectedImage(imageUrl);
+
+        // Here, you can also upload the image to an API
 
     };
 
@@ -107,7 +117,7 @@ export function NewScheduledActivityPage() {
                     <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
                         Fill in the details below to create a new scheduled activity.
                     </Typography>
-                    
+
                     <form onSubmit={handleSubmit(onSubmit)}>
                         {/* Activity Name */}
                         <TextField
@@ -115,7 +125,7 @@ export function NewScheduledActivityPage() {
                             label="Activity Name"
                             required
                             sx={{ mb: 2 }}
-                            onChange={(e) => insertUpdateData("name", e.target.value)} 
+                            onChange={(e) => insertUpdateData("name", e.target.value)}
                         />
                         {/* Activity Location */}
                         <TextField
@@ -197,7 +207,7 @@ export function NewScheduledActivityPage() {
                                 defaultValue=""
                                 label="Day"
                                 required
-                                onChange={(e) => insertUpdateData("frequencyDay", e.target.value)} 
+                                onChange={(e) => insertUpdateData("frequencyDay", e.target.value)}
                             >
                                 <MenuItem value="Monday">Monday</MenuItem>
                                 <MenuItem value="Tuesday">Tuesday</MenuItem>
@@ -240,9 +250,9 @@ export function NewScheduledActivityPage() {
                             />
                         </Button>
                         <Box sx={{ mt: 2, mb: 2 }}>
-                            <img src={activityImage} alt="Preview" style={{ width: '100%', height: 'auto', borderRadius: '8px' }} />
+                            {selectedImage && (<img src={selectedImage} alt="Preview" style={{ width: '100%', height: 'auto', borderRadius: '8px' }} />)}
                         </Box>
-                        
+
                         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                             <Button variant="contained" color="primary" type='submit' sx={{ px: 4 }}>
                                 Add Activity
@@ -253,11 +263,11 @@ export function NewScheduledActivityPage() {
                             <Typography variant="body2" color="textSecondary">
                                 {`Activity Created: ${new Date().toLocaleString()}`}
                             </Typography>
-                        </Box>                        
+                        </Box>
                     </form>
-                    
+
                 </CardContent>
             </Card>
         </Container>
     );
- }
+}

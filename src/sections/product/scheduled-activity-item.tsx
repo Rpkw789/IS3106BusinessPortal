@@ -3,7 +3,7 @@ import { Box, Card, CardContent, Typography } from '@mui/material';
 
 // -------------------------------------------------------------------
 
-export function ScheduledActivityItem({ activity }: { activity:  any}) {
+export function ScheduledActivityItem({ activity }: { activity: any }) {
     const router = useRouter();
 
     const totalSlots = parseInt(activity.totalSlots, 10); // handle string to number conversion
@@ -14,13 +14,12 @@ export function ScheduledActivityItem({ activity }: { activity:  any}) {
         <Box
             component="img"
             alt={activity.name}
-            src={activity.activityImage}
+            src={`http://localhost:3000/${activity.activityImage}`}
             sx={{
                 top: 0,
                 width: 1,
-                height: 1,
+                height: 200,
                 objectFit: 'cover',
-                position: 'absolute',
             }}
         />
     );
@@ -40,11 +39,11 @@ export function ScheduledActivityItem({ activity }: { activity:  any}) {
     const renderDate = (
         <Typography variant="body2" noWrap color="text.secondary">
             {new Date(activity.startDate).toLocaleDateString(undefined, {
-            weekday: 'short',
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-        })}
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+            })}
         </Typography>
     );
 
@@ -65,13 +64,15 @@ export function ScheduledActivityItem({ activity }: { activity:  any}) {
             onClick={() => router.push(`/activities/${activity._id}`)}
             sx={{ cursor: 'pointer', position: 'relative' }}
         >
-            <CardContent sx={{ pt: 2, pb: 3 }}>
+            <CardContent sx={{ pt: 0, pb: 3, pr: 0, pl: 0 }}>
                 {renderImg}
-                {renderName}
-                {renderLocation}
-                {renderDate}
-                {renderCreditCost}
-                {renderVacancies}
+                <div style={{ padding: 10 }}>
+                    {renderName}
+                    {renderLocation}
+                    {renderDate}
+                    {renderCreditCost}
+                    {renderVacancies}
+                </div>
             </CardContent>
         </Card>
     );
