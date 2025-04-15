@@ -43,7 +43,12 @@ export function UserView() {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       }
-    ).then((response) => response.json())
+    ).then((response) => {
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error(`Error fetching: ${response}`);
+    })
       .then((data) => {
         setBookings(data);
       })

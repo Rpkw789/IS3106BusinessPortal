@@ -26,8 +26,8 @@ export function NewScheduledActivityPage() {
     const insertUpdateData = (attributeName: string, value: any) => {
         setUpdateData((prev) => ({ ...prev, [attributeName]: value }));
     }
-      
-          useEffect(() => {
+
+    useEffect(() => {
         fetch('http://localhost:3000/api/businesses/profile', {
             method: 'GET',
             headers: {
@@ -72,7 +72,7 @@ export function NewScheduledActivityPage() {
                 // Clone current date and set time
                 const activityDate = new Date(currentDate);
                 activityDate.setHours(hour, minute, 0, 0);
-              
+
                 const activity = {
                     ...updateData,
                     isOneTime: false,
@@ -80,7 +80,7 @@ export function NewScheduledActivityPage() {
                     signUps: 0,
                     isComplete: false,
                     frequencyDay: targetDay.toString(),
-                    startDate: currentDate,
+                    startDate: activityDate,
                     directions: useProfileDirection ? direction : customDirection,
                 }
 
@@ -89,7 +89,7 @@ export function NewScheduledActivityPage() {
             // Move to the next day
             currentDate.setDate(currentDate.getDate() + 1);
         }
-      
+
         // @ts-ignore
         formData.append("activities", JSON.stringify(activities));
 
