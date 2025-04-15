@@ -5,10 +5,11 @@ import { useState, useEffect } from 'react';
 import { CONFIG } from 'src/config-global';
 
 import { ProductDetailPage } from 'src/sections/product/view/product-detail-page';
+import { ProductItemProps } from 'src/sections/product/product-item';
 // ----------------------------------------------------------------------
 
 export default function Page() {
-  const [product, setProduct] = useState(null);
+  const [product, setProduct] = useState<ProductItemProps | null>(null);
   const { productId } = useParams();
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function Page() {
   return (
     <>
       <Helmet>
-        <title> {`Products - ${CONFIG.appName}`}</title>
+        <title> {`${product.name} - ${CONFIG.appName}`}</title>
       </Helmet>
 
       <ProductDetailPage product={product}/>

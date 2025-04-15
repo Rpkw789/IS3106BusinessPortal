@@ -32,6 +32,22 @@ function formatDate(dateString: string) {
     return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
+const renderImg = (activity: ProductItemProps) => (
+    <Box
+        component="img"
+        alt="Activity Image"
+        src={`http://localhost:3000/${activity.activityImage}`}
+        sx={{
+            top: 0,
+            width: 1,
+            maxHeight: 300,
+            objectFit: 'cover',
+            borderRadius: 2,
+            mb: 2,
+        }}
+    />
+);
+
 export function ProductDetailPage({ product }: { product: ProductItemProps }) {
     const router = useRouter();
 
@@ -68,6 +84,7 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
         <Container maxWidth="md">
             <Card sx={{ mt: 4, p: 3, boxShadow: 5, borderRadius: 2 }}>
                 <CardContent>
+                    {renderImg(activity)}
                     <Typography variant="h4" fontWeight={600} gutterBottom>
                         {activity.name}
                     </Typography>

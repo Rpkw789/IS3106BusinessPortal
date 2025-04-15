@@ -34,6 +34,7 @@ export type ProductItemProps = {
   rating: number;
   createdAt: string;
   directions: string;
+  activityImage: string;
 };
 
 export function ProductItem({ product }: { product: ProductItemProps }) {
