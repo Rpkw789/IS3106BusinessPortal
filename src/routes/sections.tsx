@@ -25,6 +25,7 @@ export const ProductCustomerPage = lazy(() => import('src/pages/product-customer
 export const ProfilePage = lazy(() => import('src/pages/profile'));
 export const EditProfilePage = lazy(() => import('src/pages/edit-profile'));
 export const EditActivityPage = lazy(() => import('src/pages/edit-one-time-activity'));
+export const SchedulesPage = lazy(() => import('src/pages/schedules'));
 
 // ----------------------------------------------------------------------
 
@@ -64,6 +65,7 @@ export function Router() {
         { path: 'profile/gallery', element: <GalleryPage /> },
         { path: 'profile', element: <ProfilePage /> },
         { path: 'edit-profile', element: <EditProfilePage /> },
+        { path: 'schedules', element: <SchedulesPage /> },
       ],
     },
     {
