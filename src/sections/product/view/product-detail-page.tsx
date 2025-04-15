@@ -71,7 +71,10 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
                     setSnackbarMessage(rawdata.message);
                     setSnackbarSeverity("success");
                     setOpenSnackbar(true);
-                    router.push('/activities');
+                    setTimeout(() => {
+                        router.push('/activities');
+                    }
+                    , 2000);
                 } else {
                     setSnackbarMessage(rawdata.message);
                     setSnackbarSeverity("error");
