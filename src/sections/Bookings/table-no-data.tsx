@@ -12,7 +12,7 @@ type TableNoDataProps = TableRowProps & {
 };
 
 export function TableNoData({ searchQuery, ...other }: TableNoDataProps) {
-  const month = searchQuery.split('=')[1];
+  const month = searchQuery.split("=")[1];
   return (
     <TableRow {...other}>
       <TableCell align="center" colSpan={7}>

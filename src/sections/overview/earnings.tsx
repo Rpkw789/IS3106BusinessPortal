@@ -122,11 +122,7 @@ export function TotalEarnings({ bookings }: TotalEarningsProps) {
     const notCancelledBookings = bookings.filter((booking) => booking.status !== 'Cancelled');
     if (!notCancelledBookings || notCancelledBookings.length === 0) {
         return (
-            <Card sx={{ p: 3, textAlign: 'center', bgcolor: 'grey.100' }}>
-                <Typography variant="h6" color="text.secondary">
-                    No earnings data available
-                </Typography>
-            </Card>
+            <></>
         );
     }
 

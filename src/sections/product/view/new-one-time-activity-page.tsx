@@ -236,6 +236,7 @@ export function NewOneTimeActivityPage() {
                                 type="date"
                                 required
                                 InputLabelProps={{ shrink: true }}
+                                inputProps={{ min: new Date().toISOString().split('T')[0] }}
                                 sx={{ mb: 2 }}
                                 onChange={(e) => insertUpdateData("startDate", e.target.value)}
                             />

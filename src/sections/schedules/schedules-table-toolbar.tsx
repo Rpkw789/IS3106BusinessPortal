@@ -51,7 +51,35 @@ export function SchedulesTableToolbar({ selected, filterName, onFilterName, onFi
 
 	// once click confirmed, remove from data 
 	const confirmCancel = async () => {
-		
+		try {
+			const cancelPromises = selected.map((scheduleId) =>
+				fetch(`http://localhost:3000/api/schedules/${scheduleId}`, {
+					method: 'DELETE',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${localStorage.getItem('token')}`,
+					},
+				}).then(async (response) => {
+					if (!response.ok) {
+						const errorText = await response.text();
+						throw new Error(`Failed to cancel ${scheduleId}: ${errorText}`);
+					}
+				})
+			);
+
+			await Promise.all(cancelPromises);
+
+			setSnackbarMessage("All schedules cancelled successfully");
+			setSnackbarSeverity("success");
+			setOpenSnackbar(true);
+			closePopUp();
+			router.refresh();
+
+		} catch (error) {
+			setSnackbarMessage("Error cancelling one or more schedules");
+			setSnackbarSeverity("error");
+			setOpenSnackbar(true);
+		}
 	}
 
 	// Make filter for subscription status
@@ -107,10 +135,10 @@ export function SchedulesTableToolbar({ selected, filterName, onFilterName, onFi
 
 			{numSelected > 0 ? (
 				<>
-					<Tooltip title="Cancel booking">
+					<Tooltip title="Cancel Schedule">
 						<Button onClick={openPopUp} variant='contained' color='error'
 							startIcon={<Iconify icon="eva:trash-2-outline" />}>
-							Cancel Booking
+							Cancel Schedule
 						</Button>
 					</Tooltip>
 					<Dialog
@@ -120,11 +148,11 @@ export function SchedulesTableToolbar({ selected, filterName, onFilterName, onFi
 						aria-describedby="alert-dialog-description"
 					>
 						<DialogTitle id="alert-dialog-title">
-							Confirm Cancel Booking?
+							Confirm Cancel Schedule?
 						</DialogTitle>
 						<DialogContent>
 							<DialogContentText id="alert-dialog-description">
-								Once confirmed, booking status cannot be changed.
+								Once confirmed, <strong>ALL</strong> activities under the selected schedules will be deleted.
 							</DialogContentText>
 						</DialogContent>
 						<DialogActions>
@@ -149,7 +177,7 @@ export function SchedulesTableToolbar({ selected, filterName, onFilterName, onFi
 						aria-describedby="filter-description"
 					>
 						<DialogTitle id="filter-title">
-							Filter by Status
+							Filter by Days Of Week
 						</DialogTitle>
 						<DialogContent>
 							<FormControl component="fieldset" sx={{ mt: 2 }}>
@@ -158,9 +186,13 @@ export function SchedulesTableToolbar({ selected, filterName, onFilterName, onFi
 									onChange={(event) => setSelectedFilter(event.target.value)}
 								>
 									<FormControlLabel value="all" control={<Radio />} label="All" />
-									<FormControlLabel value="cancelled" control={<Radio />} label="Cancelled" />
-									<FormControlLabel value="confirmed" control={<Radio />} label="Confirmed" />
-									<FormControlLabel value="completed" control={<Radio />} label="Completed" />
+									<FormControlLabel value="Sunday" control={<Radio />} label="Sunday" />
+									<FormControlLabel value="Monday" control={<Radio />} label="Monday" />
+									<FormControlLabel value="Tuesday" control={<Radio />} label="Tuesday" />
+									<FormControlLabel value="Wednesday" control={<Radio />} label="Wednesday" />
+									<FormControlLabel value="Thursday" control={<Radio />} label="Thursday" />
+									<FormControlLabel value="Friday" control={<Radio />} label="Friday" />
+									<FormControlLabel value="Saturday" control={<Radio />} label="Saturday" />
 								</RadioGroup>
 							</FormControl>
 						</DialogContent>

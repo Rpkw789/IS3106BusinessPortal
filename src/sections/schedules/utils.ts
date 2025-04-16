@@ -60,11 +60,11 @@ export function getComparator<Key extends keyof any>(
 type ApplyFilterProps = {
   inputData: ScheduleProp[];
   filterName: string;
-  status: string;
+  dayName: string;
   comparator: (a: any, b: any) => number;
 };
 
-export function applyFilter({ inputData, comparator, filterName, status }: ApplyFilterProps) {
+export function applyFilter({ inputData, comparator, filterName, dayName }: ApplyFilterProps) {
   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
 
   stabilizedThis.sort((a, b) => {
@@ -80,9 +80,8 @@ export function applyFilter({ inputData, comparator, filterName, status }: Apply
       (activity) => activity.activityName.toLowerCase().indexOf(filterName.toLowerCase()) !== -1
     );
   }
-
-  if (status !== 'all') {
-    inputData = inputData.filter((activity) => activity.endDate.toLowerCase() === status.toLowerCase());
+  if (dayName !== 'all') {
+    inputData = inputData.filter((activity) => activity.frequencyDay === dayName);
   }
 
   return inputData;
