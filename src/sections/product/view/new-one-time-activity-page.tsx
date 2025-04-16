@@ -40,8 +40,8 @@ export function NewOneTimeActivityPage() {
         // Here, you can also upload the image to an API
 
     };
-      
-        useEffect(() => {
+
+    useEffect(() => {
         fetch('http://localhost:3000/api/businesses/profile', {
             method: 'GET',
             headers: {
@@ -89,6 +89,7 @@ export function NewOneTimeActivityPage() {
                 customers: [],
                 rating: 0,
                 isComplete: false,
+                startDate: activityDate,
                 frequencyDay: targetDay.toString(),
                 directions: useProfileDirection ? direction : customDirection,
             }
@@ -151,7 +152,7 @@ export function NewOneTimeActivityPage() {
                                 label="Activity Location"
                                 required
                                 {...register('location', { required: 'Activity location is required' })}
-                                 onChange={(e) => insertUpdateData("location", e.target.value)}
+                                onChange={(e) => insertUpdateData("location", e.target.value)}
                                 sx={{ mb: 2 }}
                             />
                             <FormControlLabel
@@ -178,7 +179,7 @@ export function NewOneTimeActivityPage() {
                                 multiline
                                 rows={3}
                                 sx={{ mb: 2 }}
-                              
+
                             />
                             <input
                                 type="hidden"

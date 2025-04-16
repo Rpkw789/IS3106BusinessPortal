@@ -5,6 +5,9 @@ import { useState, useEffect, act } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { start } from 'repl';
 import { useParams } from 'react-router-dom';
+import { MdPhotoCamera } from 'react-icons/md';
+import { address } from 'src/helpers/Api';
+import { CustomerTableRow } from './product-customers-page';
 
 // ----------------------------------------------------------------------
 export type ActivityProp = {
@@ -27,29 +30,43 @@ export type ActivityProp = {
 };
 
 export function EditNewOneTimeActivityPage() {
-    const { register, handleSubmit, control, setValue } = useForm();
-    const Router = useRouter();
+    const { register, handleSubmit, control } = useForm();
+    const router = useRouter();
     const { activityId } = useParams();
-    const [useProfileDirection, setUseProfileDirection] = useState(false);
-    const [canCheckbox, setCanCheckbox] = useState(false);
-    const [direction, setDirection] = useState("");
 
-    const [activities, setActivities] = useState<ActivityProp>();
+    const [updateData, setUpdateData] = useState<Record<string, any>>({ creditCost: 5 });
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [activityImage, setActivityImage] = useState<File | null>(null);
+
+    const [activity, setActivity] = useState<any | null>(null);
+
+    const [useProfileDirection, setUseProfileDirection] = useState(false);
+    const [direction, setDirection] = useState('');
+    const [canCheckbox, setCanCheckbox] = useState(false);
+
+    const [customDirection, setCustomDirection] = useState('');
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
-    useEffect(() => {
-        if (useProfileDirection && direction) {
-            // Update activities state
-            handleActivityChange("directions", direction);
-    
-            // Update form state
-            setValue("directions", direction);
-        }
-    }, [useProfileDirection, direction, setValue]);
-    
+    const insertUpdateData = (attributeName: string, value: any) => {
+        setUpdateData((prev) => ({ ...prev, [attributeName]: value }));
+    }
+
+    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setActivityImage(file);
+        // Create a URL for preview
+        const imageUrl = URL.createObjectURL(file);
+        setSelectedImage(imageUrl);
+
+        // Here, you can also upload the image to an API
+
+    };
+
     useEffect(() => {
         fetch('http://localhost:3000/api/businesses/profile', {
             method: 'GET',
@@ -69,6 +86,17 @@ export function EditNewOneTimeActivityPage() {
     }, []);
 
     useEffect(() => {
+        if (!activity) { return; }
+
+        // @ts-ignore
+        if (activity.directions === direction) {
+            setUseProfileDirection(true);
+        } else {
+            setUseProfileDirection(false);
+        }
+    }, [activity, direction])
+
+    useEffect(() => {
         fetch(`http://localhost:3000/api/activities/${activityId}`, {
             method: 'GET',
             headers: {
@@ -78,63 +106,82 @@ export function EditNewOneTimeActivityPage() {
         })
             .then((response) => response.json())
             .then((data) => {
-                setActivities(data);
+                setActivity(data);
             });
     }, [activityId]);
-    if (!activities) {
-        return <div>Loading...</div>;
-    }
-    const handleActivityChange = (field: keyof ActivityProp, value: any) => {
-        setActivities((prev) => prev ? { ...prev, [field]: value } : prev);
+
+    const onSubmit = async () => {
+
+        console.log("custom Direction", customDirection)
+        try {
+            const updatedActivity = {
+                ...updateData,
+                directions: useProfileDirection ? direction : customDirection,
+            }
+
+            if (updateData.startDate) {
+                const startDate = new Date(updateData.startDate);
+                const timeParts = updateData.frequencyTime.split(":");
+                const hour = parseInt(timeParts[0], 10);
+                const minute = parseInt(timeParts[1], 10);
+
+                const frequencyDay = startDate.toLocaleString('en-US', { weekday: 'long' });
+                const dayMapping: { [key: string]: number } = {
+                    Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
+                    Thursday: 4, Friday: 5, Saturday: 6
+                };
+                const targetDay = dayMapping[frequencyDay];
+
+                const activityDate = new Date(startDate);
+                activityDate.setHours(hour, minute, 0, 0);
+
+                // @ts-ignore
+                updatedActivity.startDate = activityDate;
+                // @ts-ignore
+                updatedActivity.frequencyDay = targetDay.toString();
+            }
+
+
+
+            const formData = new FormData();
+            if (activityImage) {
+                formData.append("activityImage", activityImage);
+            }
+
+
+            Object.keys(updatedActivity).forEach(key => {
+                formData.append(key, updateData[key]);
+            });
+
+            fetch(`http://localhost:3000/api/activities/${activityId}`, {
+                method: "PUT",
+                body: formData,
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`,
+                }
+            }).then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to update activity. Please try again.");
+                }
+                return response;
+            }).then((result) => {
+                setSnackbarMessage("Activity updated successfully!");
+                setSnackbarSeverity("success");
+                setOpenSnackbar(true);
+                router.push('/activities');
+            })
+
+        } catch (error: any) {
+            console.error("Something went wrong:", error);
+            setSnackbarMessage(error.message || "An error occurred");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+        }
     };
 
-    const onSubmit = (data: any) => {
-        const startDate = new Date(data.startDate);
-        const endDate = new Date(data.startDate);
-        const date = new Date(data.startDate);
-        const frequencyDay = date.toLocaleString('en-US', { weekday: 'long' });
-        const timeParts = data.frequencyTime.split(":"); // Extract hours and minutes from input
-        const hour = parseInt(timeParts[0], 10); // Convert to number
-        const minute = parseInt(timeParts[1], 10); // Convert to number
 
-        // Map day names to numeric values (Sunday = 0, Monday = 1, ..., Saturday = 6)
-        const dayMapping: { [key: string]: number } = {
-            "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3,
-            "Thursday": 4, "Friday": 5, "Saturday": 6
-        };
-
-        const targetDay = dayMapping[frequencyDay];
-        const currentDate = new Date(startDate);
-        const activityDate = new Date(currentDate);
-        activityDate.setHours(hour, minute, 0, 0);
-        
-        setActivities({
-            ...activities, ...data,
-            startDate: activityDate.toISOString(),
-            endDate: activityDate.toISOString(),
-            frequencyDay: targetDay,
-            directions: useProfileDirection ? direction : data.directions,
-        });
-        fetch(`http://localhost:3000/api/activities/${activityId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-            body: JSON.stringify(activities),
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    setSnackbarMessage(data.message);
-                    setSnackbarSeverity("error");
-                    setOpenSnackbar(true);
-                } else {
-                    setSnackbarMessage(data.message);
-                    setSnackbarSeverity("success");
-                    setOpenSnackbar(true);
-                    Router.push('/activities');
-                }
-            });
+    if (!activity) {
+        return <div>Loading...</div>;
     }
 
     return (
@@ -142,61 +189,41 @@ export function EditNewOneTimeActivityPage() {
             <Card sx={{ mt: 4, p: 3, boxShadow: 5, borderRadius: 2 }}>
                 <CardContent>
                     <Typography variant="h4" fontWeight={600} gutterBottom>
-                        {activities.isOneTime ? "Edit One Time Activity" : "Edit Recurring Activity"}
+                        Edit Activity
                     </Typography>
                     <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
-                        {activities.isOneTime ? "Change the details below to edit a one time activity." : 
-                            "Change the details below to edit a recurring activity."}
+                        Fill in the details below to edit activity.
                     </Typography>
                     <FormControl>
                         <form onSubmit={handleSubmit(onSubmit)}>
 
-                            <Controller
-                                name="name"
-                                control={control}
-                                defaultValue={activities.name}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        fullWidth
-                                        label="Activity Name"
-                                        onChange={(e) => {
-                                            field.onChange(e); // updates react-hook-form
-                                            handleActivityChange("name", e.target.value); // updates activities state
-                                        }}
-                                        sx={{ mb: 2 }}
-                                    />
-                                )}
+                            {/* Activity Name */}
+                            <TextField
+                                fullWidth
+                                label="Activity Name"
+                                required
+                                {...register('name', { required: 'Activity name is required' })}
+                                sx={{ mb: 2 }}
+                                defaultValue={activity && activity.name}
+                                onChange={(e) => insertUpdateData("name", e.target.value)}
                             />
                             {/* Activity Location */}
-                            <Controller
-                                name="location"
-                                control={control}
-                                defaultValue={activities.location}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        fullWidth
-                                        label="Activity Location"
-                                        onChange={(e) => {
-                                            field.onChange(e);
-                                            handleActivityChange("location", e.target.value);
-                                        }}
-                                        sx={{ mb: 2 }}
-                                    />
-                                )}
+                            <TextField
+                                fullWidth
+                                label="Activity Location"
+                                required
+                                {...register('location', { required: 'Activity location is required' })}
+                                onChange={(e) => insertUpdateData("location", e.target.value)}
+                                defaultValue={activity && activity.location}
+                                sx={{ mb: 2 }}
                             />
                             <FormControlLabel
                                 value="auto-add-direction"
-                                control={
-                                    <Checkbox
-                                        checked={useProfileDirection}
-                                        onChange={(e) => setUseProfileDirection(e.target.checked)}
-                                        disabled={!canCheckbox}
-                                    />
-                                }
-                                label="Add Direction In Profile"
-                            />
+                                control={<Checkbox
+                                    checked={useProfileDirection}
+                                    onChange={(e) => setUseProfileDirection(e.target.checked)}
+                                    disabled={!canCheckbox} />}
+                                label="Add Direction In Profile" />
                             {!canCheckbox && (
                                 <Box>
                                     <Typography variant='caption'>
@@ -204,159 +231,117 @@ export function EditNewOneTimeActivityPage() {
                                     </Typography>
                                 </Box>
                             )}
-                            <Controller
-                                name="directions"
-                                control={control}
-                                defaultValue={useProfileDirection ? direction : activities.directions}
-                                rules={{ required: 'Activity Direction is required' }}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        fullWidth
-                                        label="Direction"
-                                        disabled={useProfileDirection}
-                                        multiline
-                                        rows={3}
-                                        value={useProfileDirection ? direction : field.value}
-                                        onChange={(e) => {
-                                            field.onChange(e);
-                                            handleActivityChange("directions", e.target.value);
-                                        }}
-                                        sx={{ mb: 2 }}
-                                    />
-                                )}
+                            {/* Activity Direction */}
+                            <TextField
+                                fullWidth
+                                label="Direction"
+                                disabled={useProfileDirection}
+                                value={useProfileDirection ? direction : customDirection}
+                                onChange={(e) => setCustomDirection(e.target.value)}
+                                multiline
+                                rows={3}
+                                sx={{ mb: 2 }}
+
+                            />
+                            <input
+                                type="hidden"
+                                {...register('direction')}
+                                value={useProfileDirection ? direction : customDirection}
                             />
                             {/* Activity Description */}
-                            <Controller
-                                name="description"
-                                control={control}
-                                defaultValue={activities.description}
-                                rules={{ required: 'Activity description is required' }}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        fullWidth
-                                        label="Activity Description"
-                                        multiline
-                                        rows={3}
-                                        onChange={(e) => {
-                                            field.onChange(e);
-                                            handleActivityChange("description", e.target.value);
-                                        }}
-                                        sx={{ mb: 2 }}
-                                    />
-                                )}
+                            <TextField
+                                fullWidth
+                                label="Activity Description"
+                                required
+                                multiline
+                                rows={3}
+                                sx={{ mb: 2 }}
+                                defaultValue={activity && activity.description}
+                                onChange={(e) => insertUpdateData("description", e.target.value)}
                             />
                             {/* Total Slots */}
-                            <Controller
-                                name="totalSlots"
-                                control={control}
-                                defaultValue={activities.totalSlots}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        fullWidth
-                                        label="Total Slots"
-                                        type="number"
-                                        onChange={(e) => {
-                                            field.onChange(e);
-                                            handleActivityChange("totalSlots", parseInt(e.target.value, 10));
-                                        }}
-                                        sx={{ mb: 2 }}
-                                    />
-                                )}
+                            <TextField
+                                fullWidth
+                                label="Total Slots"
+                                required
+                                type="number"
+                                sx={{ mb: 2 }}
+                                defaultValue={activity && activity.totalSlots}
+                                onChange={(e) => insertUpdateData("totalSlots", e.target.value)}
                             />
-                            {/* Credit Cost - edit to make it a form? not sure if react recognises this as input */}
+                            {/* Credit Cost */}
                             <Typography id="credit-cost-slider" gutterBottom>
                                 Credit Cost
                             </Typography>
                             <Controller
                                 name="creditCost"
                                 control={control}
-                                defaultValue={activities.creditCost}
+                                defaultValue={activity && activity.creditCost}
                                 render={({ field }) => (
                                     <Slider
                                         {...field}
+                                        onChange={(e, value) => {
+                                            field.onChange(value);
+                                            insertUpdateData("creditCost", value);
+                                        }}
                                         aria-labelledby="credit-cost-slider"
                                         valueLabelDisplay="auto"
                                         step={1}
                                         marks
                                         min={1}
                                         max={15}
-                                        onChange={(e, value) => {
-                                            field.onChange(value);
-                                            handleActivityChange("creditCost", value as number);
-                                        }}
                                     />
                                 )}
                             />
-                            {/* Activity Date */}
-                            <Controller
-                                name="startDate"
-                                control={control}
-                                defaultValue={new Date(activities.startDate).toISOString().split('T')[0]}
-                                rules={{ required: 'Activity date is required' }}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        fullWidth
-                                        label="Activity Date"
-                                        type="date"
-                                        InputLabelProps={{ shrink: true }}
-                                        inputProps={{ min: new Date().toISOString().split('T')[0] }}
-                                        onChange={(e) => {
-                                            field.onChange(e);
-                                            handleActivityChange("startDate", e.target.value);
-                                        }}
-                                        sx={{ mb: 2 }}
-                                    />
-                                )}
+                            <TextField
+                                fullWidth
+                                label="Activity Date"
+                                type="date"
+                                required
+                                InputLabelProps={{ shrink: true }}
+                                sx={{ mb: 2 }}
+                                defaultValue={activity && new Date(activity.startDate).toISOString().split('T')[0]}
+                                onChange={(e) => insertUpdateData("startDate", e.target.value)}
                             />
                             {/* Activity Time */}
-                            <Controller
-                                name="frequencyTime"
-                                control={control}
-                                defaultValue={activities.frequencyTime}
-                                rules={{ required: 'Activity time is required' }}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        fullWidth
-                                        label="Start Time of Activity (HH:MM)"
-                                        onChange={(e) => {
-                                            field.onChange(e);
-                                            handleActivityChange("frequencyTime", e.target.value);
-                                        }}
-                                        sx={{ mb: 2 }}
-                                    />
-                                )}
+                            <TextField
+                                fullWidth
+                                label="Start Time of Activity (HH:MM)"
+                                required
+                                sx={{ mb: 2 }}
+                                defaultValue={activity && activity.frequencyTime}
+                                onChange={(e) => insertUpdateData("frequencyTime", e.target.value)}
                             />
                             {/* Activity Duration */}
-                            <Controller
-                                name="duration"
-                                control={control}
-                                defaultValue={activities.duration}
-                                rules={{ required: 'Activity duration is required' }}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        fullWidth
-                                        label="Activity Duration"
-                                        type="number"
-                                        inputProps={{ step: "0.01", min: "0" }}
-                                        onChange={(e) => {
-                                            const value = parseInt(e.target.value, 10);
-                                            field.onChange(value);
-                                            handleActivityChange("duration", value);
-                                        }}
-                                        sx={{ mb: 2 }}
-                                    />
-                                )}
+                            <TextField
+                                fullWidth
+                                label="Activity Duration"
+                                required
+                                type="number"
+                                inputProps={{ step: "0.01", min: "0" }}
+                                sx={{ mb: 2 }}
+                                defaultValue={activity && activity.duration}
+                                onChange={(e) => insertUpdateData("duration", e.target.value)}
                             />
+                            {/* Activity Image */}
+                            <Button variant="outlined" component="label">
+                                <MdPhotoCamera size={18} color="black" />
+                                <Typography sx={{ ml: 1 }} variant="body2">Upload Image</Typography>
+                                <input
+                                    type="file"
+                                    name="file"
+                                    hidden
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                />
+                            </Button>
+                            <Box sx={{ mt: 2, mb: 2 }}>
+                                <img src={selectedImage || `${address}${activity.activityImage}`} alt="Preview" style={{ width: '100%', height: 'auto', borderRadius: '8px' }} />
+                            </Box>
 
                             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                                 <Button variant="contained" color="primary" type="submit" sx={{ px: 4 }}>
-                                    Edit Activity
+                                    Add Activity
                                 </Button>
                             </Box>
 
@@ -381,4 +366,4 @@ export function EditNewOneTimeActivityPage() {
             </Snackbar>
         </Container>
     );
-};
+}
