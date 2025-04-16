@@ -2,6 +2,12 @@ import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { red } from '@mui/material/colors';
 import Avatar from '@mui/material/Avatar';
 import Popover from '@mui/material/Popover';
 import TableRow from '@mui/material/TableRow';
@@ -17,13 +23,13 @@ import { Iconify } from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 export type ScheduleProp = {
-    _id: string;
-    activityName: string;
-    startDate: string;
-    endDate: string;
-    frequencyDay: string;
-    frequencyTime: string;
-    businessId: string;
+  _id: string;
+  activityName: string;
+  startDate: string;
+  endDate: string;
+  frequencyDay: string;
+  frequencyTime: string;
+  businessId: string;
 };
 
 type SchedulesTableRowProps = {
@@ -33,7 +39,6 @@ type SchedulesTableRowProps = {
 };
 
 export function ScheduleTableRow({ row, selected, onSelectRow }: SchedulesTableRowProps) {
-  console.log(row);
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
@@ -53,10 +58,6 @@ export function ScheduleTableRow({ row, selected, onSelectRow }: SchedulesTableR
         <TableCell>{row.frequencyDay}</TableCell>
 
         <TableCell>{row.frequencyTime}</TableCell>
-
-        {/* <TableCell>
-          <Label color={(row.status === 'Cancelled' && 'error') || 'success'}>{row.status}</Label>
-        </TableCell> */}
       </TableRow>
     </>
   );

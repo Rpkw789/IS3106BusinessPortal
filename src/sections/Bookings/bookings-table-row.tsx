@@ -36,7 +36,6 @@ type UserTableRowProps = {
 };
 
 export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) {
-  console.log(row);
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>

@@ -1,7 +1,7 @@
 import { useForm, Controller, set } from 'react-hook-form';
 import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Snackbar, Alert, Slider, Checkbox } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
-import { useState, useEffect } from "react";
+import { useState, useEffect, act } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { start } from 'repl';
 import { useParams } from 'react-router-dom';
@@ -142,10 +142,11 @@ export function EditNewOneTimeActivityPage() {
             <Card sx={{ mt: 4, p: 3, boxShadow: 5, borderRadius: 2 }}>
                 <CardContent>
                     <Typography variant="h4" fontWeight={600} gutterBottom>
-                        Edit New One Time Activity
+                        {activities.isOneTime ? "Edit One Time Activity" : "Edit Recurring Activity"}
                     </Typography>
                     <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
-                        Change the details below to edit a new one time activity.
+                        {activities.isOneTime ? "Change the details below to edit a one time activity." : 
+                            "Change the details below to edit a recurring activity."}
                     </Typography>
                     <FormControl>
                         <form onSubmit={handleSubmit(onSubmit)}>
@@ -302,6 +303,7 @@ export function EditNewOneTimeActivityPage() {
                                         label="Activity Date"
                                         type="date"
                                         InputLabelProps={{ shrink: true }}
+                                        inputProps={{ min: new Date().toISOString().split('T')[0] }}
                                         onChange={(e) => {
                                             field.onChange(e);
                                             handleActivityChange("startDate", e.target.value);

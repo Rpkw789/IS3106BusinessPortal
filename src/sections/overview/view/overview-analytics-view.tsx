@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import Grid from '@mui/material/Unstable_Grid2';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
@@ -272,12 +274,17 @@ export function OverviewAnalyticsView() {
 										<EarningsRow key={row.activityName} row={row} />
 									))}
 
-								<TableEmptyRows
-									height={68}
-									emptyRows={emptyRows(table.page, table.rowsPerPage, _activity.length)}
-								/>
+								{groupedBookings.length === 0 && !chooseDate && (
+									<TableRow>
+										<TableCell colSpan={7} align="center">
+											<Typography variant="subtitle1" sx={{ py: 3 }}>
+												No Earnings found
+											</Typography>
+										</TableCell>
+									</TableRow>
+								)}
 
-								{!groupedBookings || groupedBookings.length === 0 ? <TableNoData searchQuery={chooseDate} /> : null}
+								{groupedBookings.length === 0 && chooseDate !== '' ? <TableNoData searchQuery={chooseDate} /> : null}
 							</TableBody>
 							<TableBody>
 								<TotalEarnings bookings={bookingsFiltered} />
@@ -340,6 +347,15 @@ export function OverviewAnalyticsView() {
 									height={68}
 									emptyRows={emptyRows(table.page, table.rowsPerPage, _activity.length)}
 								/>
+								{dataFiltered.length === 0 && !filterName && (
+									<TableRow>
+										<TableCell colSpan={7} align="center">
+											<Typography variant="subtitle1" sx={{ py: 3 }}>
+												No activities scheduled for today found
+											</Typography>
+										</TableCell>
+									</TableRow>
+								)}
 
 								{notFound && <TableNoData searchQuery={filterName} />}
 							</TableBody>
