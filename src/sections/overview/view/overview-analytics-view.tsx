@@ -11,6 +11,7 @@ import { Card } from '@mui/material';
 
 import { _tasks, _posts, _timeline, _activity } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
+import Api from 'src/helpers/Api';
 
 import { BookingProp } from 'src/sections/Bookings/bookings-table-row';
 import { format } from 'date-fns';
@@ -55,15 +56,7 @@ export function OverviewAnalyticsView() {
 	const [confirmedFilter, setConfirmedFilter] = useState("");
 	useEffect(() => {
 		const query = confirmedFilter !== "" ? `&activity=${confirmedFilter}` : "";
-		fetch(`http://localhost:3000/api/bookings/biz${chooseDate}${query}`,
-			{
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${localStorage.getItem("token")}`,
-				},
-			}
-		).then((response) => response.json())
+		Api.getBookingsWithQuery(chooseDate, query).then((response) => response.json())
 			.then((data) => {
 				if (Array.isArray(data)) {
 					setBookings(data);
@@ -74,14 +67,7 @@ export function OverviewAnalyticsView() {
 			})
 	}, [chooseDate, confirmedFilter]);
 	useEffect(() => {
-		fetch('http://localhost:3000/api/activities/today-activities',
-			{
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${localStorage.getItem("token")}`,
-				},
-			})
+		Api.getTodayActivities()
 			.then((res) => {
 				if (res.ok) {
 					return res.json();  // This returns a Promise
@@ -94,47 +80,20 @@ export function OverviewAnalyticsView() {
 			.catch((error) => {
 				console.error('Error fetching activities:', error);
 			});
-		fetch(`http://localhost:3000/api/bookings/biz${monthQueryStr}`,
-			{
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${localStorage.getItem("token")}`,
-				},
-			})
-			.then((response) => response.json())
+		Api.getBookingsByBusinessWithQuery(monthQueryStr).then((response) => response.json())
 			.then((data) => {
 				if (Array.isArray(data)) {
-					// let credit = 0;
 					setPieChartData(groupBookingsByActivityPie(data));
-					// data.forEach((item) => {
-					// 	if (item.status !== "Cancelled") {
-					// 		credit += item.creditSpent;
-					// 	}
-					// });
 				}
 			})
-		fetch(`http://localhost:3000/api/bookings/historyStats${monthQueryStr}`,
-			{
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${localStorage.getItem("token")}`,
-				},
-			})
+		Api.getMonthlyCreditsEarned(monthQueryStr)
 			.then((res) => res.json())
 			.then((data) => {
 				if (data.status === 'success') {
 					setHistoryStats(data.monthly);
 				}
 			})
-		fetch(`http://localhost:3000/api/reviews//calMonthlyBiz${monthQueryStr}`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${localStorage.getItem("token")}`,
-			},
-		}).then((res) => res.json())
+		Api.getMonthlyRatings(monthQueryStr).then((res) => res.json())
 			.then((data) => {
 				if (data.status === 'success') {
 					setRatingStats(data.monthly);

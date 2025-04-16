@@ -10,6 +10,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
+import Api from 'src/helpers/Api';
 
 import { useRouter } from 'src/routes/hooks';
 
@@ -49,13 +50,7 @@ export function SignUpView() {
 
 
     const handleSignUp = useCallback(() => {
-        fetch('http://localhost:3000/api/businesses/signup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData),
-        })
+        Api.signUp(formData)
             .then((response) => response.json())
             .then((data) => {
                 if (data.status === "success") {

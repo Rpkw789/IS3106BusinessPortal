@@ -69,44 +69,6 @@ export function FinanceToolbar({ chooseDate, onChooseDate, activityOptions, onCh
                     )}
                 </Box>
             </LocalizationProvider>
-            {/* <Box>
-                <Tooltip title="Filter By Activities">
-                    <IconButton onClick={openFilter}>
-                        <Iconify icon="ic:round-filter-list" />
-                    </IconButton>
-                </Tooltip>
-                <Dialog
-                    open={filter}
-                    onClose={closeFilter}
-                    aria-labelledby="filter-popUp"
-                    aria-describedby="filter-description"
-                >
-                    <DialogTitle id="filter-title">
-                        Filter by Activities
-                    </DialogTitle>
-                    <DialogContent>
-                        <TextField
-                            id="outlined-select-currency"
-                            select
-                            value={selectedFilter}
-                            onChange={onChangeActivity}
-                            helperText="Please select your Activity"
-                        >
-                            {activityOptions.map((option) => (
-                                <MenuItem key={option} value={option}>
-                                    {option}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button sx={{ color: red[500] }} onClick={closeFilter}>Cancel</Button>
-                        <Button onClick={confirmedFilter}>
-                            Confirm
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            </Box> */}
         </Toolbar>
     )
 };

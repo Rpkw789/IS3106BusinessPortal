@@ -2,11 +2,11 @@ import { useForm, Controller, set } from 'react-hook-form';
 import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Snackbar, Alert, Slider, Checkbox } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
 import { useState, useEffect, act } from "react";
+import Api, {address} from 'src/helpers/Api';
 import { v4 as uuidv4 } from 'uuid';
 import { start } from 'repl';
 import { useParams } from 'react-router-dom';
 import { MdPhotoCamera } from 'react-icons/md';
-import { address } from 'src/helpers/Api';
 import { CustomerTableRow } from './product-customers-page';
 
 // ----------------------------------------------------------------------
@@ -68,13 +68,7 @@ export function EditNewOneTimeActivityPage() {
     };
 
     useEffect(() => {
-        fetch('http://localhost:3000/api/businesses/profile', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-        }).then((response) => response.json())
+        Api.getBusinessProfile().then((response) => response.json())
             .then((data) => {
                 if (data.status === 'success') {
                     if (data.business.directions !== "") {
@@ -97,13 +91,7 @@ export function EditNewOneTimeActivityPage() {
     }, [activity, direction])
 
     useEffect(() => {
-        fetch(`http://localhost:3000/api/activities/${activityId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-        })
+        Api.getActivityById(activityId)
             .then((response) => response.json())
             .then((data) => {
                 setActivity(data);
@@ -112,7 +100,6 @@ export function EditNewOneTimeActivityPage() {
 
     const onSubmit = async () => {
 
-        console.log("custom Direction", customDirection)
         try {
             const updatedActivity = {
                 ...updateData,
@@ -150,16 +137,9 @@ export function EditNewOneTimeActivityPage() {
 
 
             Object.keys(updatedActivity).forEach(key => {
-                formData.append(key, updateData[key]);
+                formData.append(key, (updatedActivity as Record<string, any>)[key]);
             });
-
-            fetch(`http://localhost:3000/api/activities/${activityId}`, {
-                method: "PUT",
-                body: formData,
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem("token")}`,
-                }
-            }).then((response) => {
+            Api.editActivities(activityId, formData).then((response) => {
                 if (!response.ok) {
                     throw new Error("Failed to update activity. Please try again.");
                 }

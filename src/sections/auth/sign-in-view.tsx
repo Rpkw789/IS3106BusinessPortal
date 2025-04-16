@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-
+import Api from 'src/helpers/Api';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Snackbar from '@mui/material/Snackbar';
@@ -43,14 +43,7 @@ export function SignInView() {
 	};
 
 	const handleSignIn = useCallback(() => {
-		fetch('http://localhost:3000/api/businesses/login', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(formData),
-		})
-			.then((response) => response.json())
+		Api.login(formData).then((response) => response.json())
 			.then((data) => {
 				if (data.status === "success") {
 					localStorage.setItem("token", data.accessToken);
@@ -149,27 +142,6 @@ export function SignInView() {
 					{snackbarMessage}
 				</Alert>
 			</Snackbar>
-
-			{/* <Divider sx={{ my: 3, '&::before, &::after': { borderTopStyle: 'dashed' } }}>
-        <Typography
-          variant="overline"
-          sx={{ color: 'text.secondary', fontWeight: 'fontWeightMedium' }}
-        >
-          OR
-        </Typography>
-      </Divider>
-
-      <Box gap={1} display="flex" justifyContent="center">
-        <IconButton color="inherit">
-          <Iconify icon="logos:google-icon" />
-        </IconButton>
-        <IconButton color="inherit">
-          <Iconify icon="eva:github-fill" />
-        </IconButton>
-        <IconButton color="inherit">
-          <Iconify icon="ri:twitter-x-fill" />
-        </IconButton>
-      </Box> */}
 		</>
 	);
 }
