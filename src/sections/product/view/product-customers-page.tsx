@@ -3,7 +3,6 @@ import Api from "src/helpers/Api";
 import { useParams } from "react-router-dom";
 import { Typography, Box, Card, TableContainer, Table, TableBody, TableCell, TableRow } from "@mui/material";
 import { DashboardContent } from "src/layouts/dashboard";
-import { _customers } from "src/_mock";
 import { getComparator, emptyRows } from "src/sections/Bookings/utils";
 import { useTable } from "src/sections/Bookings/view";
 import { Scrollbar } from "src/components/scrollbar";
@@ -79,11 +78,6 @@ export function ProductCustomerPage() {
                                     row={row}
                                     />
                                 ))}
-
-                                <TableEmptyRows
-                                height={68}
-                                emptyRows={emptyRows(table.page, table.rowsPerPage, _customers.length)}
-                                />
 
                                 {notFound && <TableNoData searchQuery={filterName} />}
                             </TableBody>

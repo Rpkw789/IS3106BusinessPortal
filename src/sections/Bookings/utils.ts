@@ -1,8 +1,3 @@
-import 
-{ _users,
-  _id,
-  _contact,
-} from 'src/_mock';
 import type { BookingProp } from './bookings-table-row';
 
 // ----------------------------------------------------------------------
@@ -86,27 +81,4 @@ export function applyFilter({ inputData, comparator, filterName, status }: Apply
   }
 
   return inputData;
-}
-
-// ----------------------------------------------------------------------
-
-export type addStaffProps = {
-  name: string,
-  number: string,
-  role: string, 
-  roleType: string
-}
-export function addStaff({name, number, role, roleType}: addStaffProps) {
-    const index = _users.length + 1;
-    const newStaff = {
-        id: _id(index),
-        name,
-        contact: number,
-        roleType,
-        avatarUrl: `/assets/images/avatar/avatar-${index + 1}.webp`,
-        status: 'active',
-        role,
-    }
-    // store in db
-    _users.push(newStaff);
 }

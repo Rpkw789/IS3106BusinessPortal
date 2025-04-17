@@ -7,7 +7,6 @@ import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
 import { Button } from '@mui/material';
 
-import { _products } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { useRouter } from 'src/routes/hooks';
 
