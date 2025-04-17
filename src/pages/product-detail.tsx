@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import Api from "src/helpers/Api";
 
 import { CONFIG } from 'src/config-global';
 
@@ -15,15 +16,7 @@ export default function Page() {
   useEffect(() => {
     if (!productId) return;
 
-    fetch(`http://localhost:3000/api/activities/${productId}`
-      , {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      }
-    )
+    Api.getActivityById(productId)
       .then((response) => {
         if (!response.ok) {
           throw new Error('Network response was not ok');

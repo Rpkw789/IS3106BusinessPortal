@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Api from "src/helpers/Api";
 import { useParams } from "react-router-dom";
 import { Typography, Box, Card, TableContainer, Table, TableBody, TableCell, TableRow } from "@mui/material";
 import { DashboardContent } from "src/layouts/dashboard";
@@ -11,19 +12,13 @@ import { TableEmptyRows } from "../../Bookings/table-empty-rows";
 import { TableNoData } from "../../Bookings/table-no-data";
 
 export function ProductCustomerPage() {
-    const table = useTable();
+  const table = useTable();
 	const {activityId} = useParams();
-    const [filterName, setFilterName] = useState('');
+  const [filterName, setFilterName] = useState('');
 	const [customers, setCustomers] = useState<any[]>([]);
 
 	useEffect(() => {
-		fetch(`http://localhost:3000/api/bookings/activity/${activityId}`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${localStorage.getItem('token')}`,
-			},
-		})
+		Api.getActivityBookings(activityId)
 			.then((response) => response.json())
 			.then((data) => {
 				if (data.status === "success") {

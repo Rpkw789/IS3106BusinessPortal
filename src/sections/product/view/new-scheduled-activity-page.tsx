@@ -1,4 +1,5 @@
 import { Controller, useForm } from 'react-hook-form';
+import Api from "src/helpers/Api";
 import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Select, InputLabel, MenuItem, Slider, Snackbar, Checkbox } from "@mui/material";
 import { useRouter } from 'src/routes/hooks';
 import { useState, useEffect } from 'react';
@@ -28,13 +29,7 @@ export function NewScheduledActivityPage() {
     }
 
     useEffect(() => {
-        fetch('http://localhost:3000/api/businesses/profile', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-        }).then((response) => response.json())
+        Api.getBusinessProfile().then((response) => response.json())
             .then((data) => {
                 if (data.status === 'success') {
                     if (data.business.directions !== "") {
@@ -94,13 +89,7 @@ export function NewScheduledActivityPage() {
         formData.append("activities", JSON.stringify(activities));
 
         try {
-            fetch('http://localhost:3000/api/activities/add-new-scheduled-activity', {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                body: formData,
-            }).then((response) => {
+            Api.addScheduledActivity(formData).then((response) => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import Api from "src/helpers/Api";
 import { Card, TableBody, TableContainer, 
   TablePagination, Typography, TableRow, TableCell } from "@mui/material";
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -23,13 +24,7 @@ export function SchedulesViewPage() {
   const [schedules, setSchedules] = useState<ScheduleProp[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/schedules/all-business-schedules", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    }).then((response) => {
+    Api.getBusinessSchedules().then((response) => {
       if (response.ok) {
         return response.json();
       }

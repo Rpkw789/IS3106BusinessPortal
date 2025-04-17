@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Api from "src/helpers/Api";
 
 import Tooltip from '@mui/material/Tooltip';
 import Toolbar from '@mui/material/Toolbar';
@@ -53,13 +54,7 @@ export function SchedulesTableToolbar({ selected, filterName, onFilterName, onFi
 	const confirmCancel = async () => {
 		try {
 			const cancelPromises = selected.map((scheduleId) =>
-				fetch(`http://localhost:3000/api/schedules/${scheduleId}`, {
-					method: 'DELETE',
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer ${localStorage.getItem('token')}`,
-					},
-				}).then(async (response) => {
+				Api.deleteSchedule(scheduleId).then(async (response) => {
 					if (!response.ok) {
 						const errorText = await response.text();
 						throw new Error(`Failed to cancel ${scheduleId}: ${errorText}`);

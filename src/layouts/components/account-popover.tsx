@@ -1,4 +1,5 @@
 import type { IconButtonProps } from '@mui/material/IconButton';
+import Api from "src/helpers/Api";
 
 import { useState, useCallback, useEffect } from 'react';
 
@@ -34,13 +35,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
   const [profile, setProfile] = useState<Profile | null>(null);
   
     useEffect(() => {
-      fetch("http://localhost:3000/api/businesses/profile", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
+      Api.getBusinessProfile()
         .then((response) => {
           if (!response.ok) throw new Error("Failed to fetch profile");
           return response.json();

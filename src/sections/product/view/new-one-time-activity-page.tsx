@@ -3,6 +3,7 @@ import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormC
 import { useRouter } from "src/routes/hooks";
 import { useEffect, useState } from "react";
 import { MdPhotoCamera } from "react-icons/md";
+import Api from 'src/helpers/Api';
 
 // ----------------------------------------------------------------------
 
@@ -42,13 +43,7 @@ export function NewOneTimeActivityPage() {
     };
 
     useEffect(() => {
-        fetch('http://localhost:3000/api/businesses/profile', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-        }).then((response) => response.json())
+        Api.getBusinessProfile().then((response) => response.json())
             .then((data) => {
                 if (data.status === 'success') {
                     if (data.business.directions !== "") {
@@ -98,13 +93,7 @@ export function NewOneTimeActivityPage() {
             // @ts-ignore
             formData.append("activities", JSON.stringify(activities));
 
-            fetch(`http://localhost:3000/api/activities/add-new-one-time-activity`, {
-                method: "POST",
-                body: formData,
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem("token")}`,
-                }
-            }).then((response) => {
+            Api.addOneTimeActivity(formData).then((response) => {
                 if (!response.ok) {
                     throw new Error("Failed to create activity. Please try again.");
                 }

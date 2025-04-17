@@ -18,13 +18,7 @@ export function ProfileGalleryView() {
     const router = useRouter();
 
     useEffect(() => {
-        fetch("http://localhost:3000/api/businesses/profile", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-        })
+        Api.getBusinessProfile()
             .then((response) => {
                 if (!response.ok) throw new Error("Failed to fetch profile");
                 return response.json();

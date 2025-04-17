@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import Api from "src/helpers/Api";
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Unstable_Grid2';
@@ -82,13 +83,7 @@ export function ScheduledActivitiesView() {
       });
 
       try {
-        const response = await fetch(`http://localhost:3000/api/activities/all-business-activities?${queryParams.toString()}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
+        const response = await Api.getAllBusinessActivities(queryParams.toString());
   
         const result = await response.json();
         setActivities(result);

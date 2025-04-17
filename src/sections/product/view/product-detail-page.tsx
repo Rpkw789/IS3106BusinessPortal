@@ -1,3 +1,4 @@
+import Api from "src/helpers/Api";
 import { Container, Alert, Snackbar, Typography, Box, Button, Card, CardContent, Stack, Chip, Divider, Rating } from '@mui/material';
 import { useRouter } from 'src/routes/hooks';
 import { ProductItemProps } from 'src/sections/product/product-item';
@@ -58,13 +59,7 @@ export function ProductDetailPage({ product }: { product: ProductItemProps }) {
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
     const onDelete = () => {
-        fetch(`http://localhost:3000/api/activities/${product._id}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-        })
+        Api.deleteActivity(product._id)
             .then((response) => response.json())
             .then((rawdata) => {
                 if (rawdata.status === "success") {

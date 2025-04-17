@@ -2,6 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { ProfileView, Profile } from "src/sections/profile/view/profile-page";
 import { useState, useEffect } from "react";
 import { useRouter } from "src/routes/hooks";
+import Api from "src/helpers/Api";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -10,13 +11,7 @@ export default function ProfilePage() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/businesses/profile", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
+    Api.getBusinessProfile()
       .then((response) => {
         if (!response.ok) throw new Error("Failed to fetch profile");
         return response.json();
