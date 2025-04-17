@@ -28,7 +28,7 @@ import type { BookingProp } from '../bookings-table-row';
 
 // ----------------------------------------------------------------------
 
-export function UserView() {
+export function BookingsView() {
     const table = useTable();
 
     const [filterName, setFilterName] = useState('');

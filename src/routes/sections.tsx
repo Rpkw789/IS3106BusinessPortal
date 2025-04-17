@@ -12,7 +12,7 @@ import GalleryPage from 'src/pages/profile-gallery';
 // ----------------------------------------------------------------------
 
 export const HomePage = lazy(() => import('src/pages/home'));
-export const UserPage = lazy(() => import('src/pages/user'));
+export const BookingsPage = lazy(() => import('src/pages/Bookings'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
 export const SignUpPage = lazy(() => import('src/pages/sign-up'));
 export const ActivitiesPage = lazy(() => import('src/pages/activities'));
@@ -53,7 +53,7 @@ export function Router() {
       ),
       children: [
         { element: <HomePage />, index: true },
-        { path: 'bookings', element: <UserPage /> },
+        { path: 'bookings', element: <BookingsPage /> },
         { path: 'activities', element: <ActivitiesPage /> },
         { path: 'activities/:productId', element: <ProductsDetailsPage /> },
         { path: 'add-scheduled-activity', element: <NewScheduledActivity /> },
