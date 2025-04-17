@@ -12,7 +12,6 @@ import GalleryPage from 'src/pages/profile-gallery';
 // ----------------------------------------------------------------------
 
 export const HomePage = lazy(() => import('src/pages/home'));
-export const BlogPage = lazy(() => import('src/pages/blog'));
 export const UserPage = lazy(() => import('src/pages/user'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
 export const SignUpPage = lazy(() => import('src/pages/sign-up'));
@@ -56,7 +55,6 @@ export function Router() {
         { element: <HomePage />, index: true },
         { path: 'bookings', element: <UserPage /> },
         { path: 'activities', element: <ActivitiesPage /> },
-        { path: 'blog', element: <BlogPage /> },
         { path: 'activities/:productId', element: <ProductsDetailsPage /> },
         { path: 'add-scheduled-activity', element: <NewScheduledActivity /> },
         { path: 'add-one-time-activity', element: <NewOneTimeActivity /> },

@@ -1,8 +1,3 @@
-import 
-{ _users,
-  _id,
-  _contact,
-} from 'src/_mock';
 import type { ScheduleProp } from './schedules-table-row';
 
 // ----------------------------------------------------------------------

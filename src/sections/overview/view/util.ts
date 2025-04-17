@@ -1,5 +1,4 @@
 import { BookingProp } from 'src/sections/Bookings/bookings-table-row';
-import dayjs from 'dayjs';
 import {GroupedBooking } from '../earnings';
 
 export type ActivityProp = {

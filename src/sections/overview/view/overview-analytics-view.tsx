@@ -9,7 +9,6 @@ import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import { Card } from '@mui/material';
 
-import { _tasks, _posts, _timeline, _activity } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 import Api from 'src/helpers/Api';
 
@@ -18,11 +17,9 @@ import { format } from 'date-fns';
 import { Dayjs } from 'dayjs';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useTable } from 'src/sections/Bookings/view';
-import { getComparator, emptyRows } from 'src/sections/Bookings/utils';
-import { TableEmptyRows } from 'src/sections/Bookings/table-empty-rows';
+import { getComparator } from 'src/sections/Bookings/utils';
 import { TableNoData } from 'src/sections/Bookings/table-no-data';
 import { AnalyticsCurrentVisits } from '../analytics-current-visits';
-import { AnalyticsWebsiteVisits } from '../analytics-website-visits';
 import { AnalyticsWidgetSummary } from '../analytics-widget-summary';
 import { TodayActivities, ActivityTableHead, ActivityTableRow } from '../analytics-today-activities';
 import { EarningsRow, FinanceToolbar, TotalEarnings } from '../earnings';
@@ -302,10 +299,6 @@ export function OverviewAnalyticsView() {
 										/>
 									))}
 
-								<TableEmptyRows
-									height={68}
-									emptyRows={emptyRows(table.page, table.rowsPerPage, _activity.length)}
-								/>
 								{dataFiltered.length === 0 && !filterName && (
 									<TableRow>
 										<TableCell colSpan={7} align="center">
