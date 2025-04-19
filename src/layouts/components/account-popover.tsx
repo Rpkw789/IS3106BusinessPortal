@@ -33,26 +33,26 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
 
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  
-    useEffect(() => {
-      Api.getBusinessProfile()
-        .then((response) => {
-          if (!response.ok) throw new Error("Failed to fetch profile");
-          return response.json();
-        })
-        .then((resData) => {
-          if (resData.status === "success") {
-            setProfile(resData.business);
-          } else {
-            console.error(resData.message);
-            router.push("/sign-in");
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
+
+  useEffect(() => {
+    Api.getBusinessProfile()
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to fetch profile");
+        return response.json();
+      })
+      .then((resData) => {
+        if (resData.status === "success") {
+          setProfile(resData.business);
+        } else {
+          console.error(resData.message);
           router.push("/sign-in");
-        });
-    }, [router]);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        router.push("/sign-in");
+      });
+  }, [router]);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     setOpenPopover(event.currentTarget);
@@ -71,7 +71,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
   );
 
   if (!profile) {
-    return null; 
+    return null;
   }
 
   return (
