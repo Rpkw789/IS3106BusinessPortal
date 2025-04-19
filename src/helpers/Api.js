@@ -214,6 +214,25 @@ const Api = {
       },
     });
   },
+  forgetPassword(email) {
+    return fetch(`${address}/api/businesses/forgetPassword`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email })
+    });
+  },
+  changePassword(oldPassword, newPassword) {
+    return fetch(`${address}/api/businesses/changePassword`, {
+      method: "PUT",
+      headers: {
+        "authorization": `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ oldPassword, newPassword }),
+    });
+  },
 };
 
 export default Api;

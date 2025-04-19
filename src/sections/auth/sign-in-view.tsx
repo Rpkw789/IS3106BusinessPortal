@@ -13,6 +13,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { useRouter } from 'src/routes/hooks';
 
 import { Iconify } from 'src/components/iconify';
+import ChangePasswordDialog from './changePasswordDialog';
 
 // ----------------------------------------------------------------------
 
@@ -28,6 +29,7 @@ export function SignInView() {
 	const [openSnackbar, setOpenSnackbar] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
 	const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+	const [open, setOpen] = useState(false);
 
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setFormData({
@@ -78,7 +80,7 @@ export function SignInView() {
 				onKeyDown={handleKeyPress}
 			/>
 
-			<Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
+			<Link variant="body2" color="inherit" sx={{ mb: 1.5 }} onClick={() => { setOpen(true) }}>
 				Forgot password?
 			</Link>
 
@@ -142,6 +144,8 @@ export function SignInView() {
 					{snackbarMessage}
 				</Alert>
 			</Snackbar>
+
+			<ChangePasswordDialog open={open} handleClose={() => setOpen(false)} />
 		</>
 	);
 }
