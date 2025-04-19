@@ -4,6 +4,7 @@ import { set } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import EditIconSVG from "src/components/editIconSVG";
 import Api from "src/helpers/Api";
+import ChangePasswordDialog from "./changePasswordDialog";
 
 export type ProfileViewProps = {
   profile: Profile;
@@ -35,6 +36,7 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [isOperational, setIsOperational] = useState(profile.isOperational);
+  const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -261,7 +263,8 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
                   onChange={(e) => insertUpdateData("website", e.target.value)}
                 />
               </div>) : (<div style={{ fontSize: 14 }}>
-                <a href={`https://${profile.website}`} target="_blank" rel="noopener noreferrer">{profile.website}</a></div>)}
+                <a href={`https://${profile.website}`} target="_blank" rel="noopener noreferrer">{profile.website.length > 40 ? `${profile.website.substring(0, 40)}...` : profile.website}
+                </a></div>)}
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E5E8EB', padding: 16 }}>
@@ -280,22 +283,6 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
               </div>) : (<div style={{ fontSize: 14 }}>{profile.email}</div>)}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, color: '#617A8A' }}>Password</div>
-              {isEditPage ? (<div>
-                <TextField
-                  fullWidth
-                  name="password"
-                  label=""
-                  defaultValue={profile.password}
-                  InputLabelProps={{ shrink: true }}
-                  sx={{ mb: 3, mt: 1 }}
-                  onChange={(e) => insertUpdateData("password", e.target.value)}
-                />
-              </div>) : (<div style={{ fontSize: 14 }}>{profile.password}</div>)}
-            </div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E5E8EB', padding: 16 }}>
-            <div style={{ flex: 1, paddingRight: 16 }}>
               <div style={{ fontSize: 14, color: '#617A8A' }}>Operational Status</div>
               {isEditPage ? (<div>
                 <Select
@@ -318,10 +305,9 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
               <Button onClick={() => setEditPage(true)} variant="contained" color="primary" style={{ padding: '12px 24px', borderRadius: 8, textTransform: 'none' }}>
                 <div style={{ fontSize: 14, fontWeight: '700' }}>Edit Business Details</div>
               </Button>
-              {/*
-              <Button onClick={handleDisableAccount} variant="contained" color="secondary" style={{ padding: '12px 24px', borderRadius: 8, textTransform: 'none' }}>
-                <div style={{ fontSize: 14, fontWeight: '700' }}>Disable Account</div>
-              </Button> */}
+              <Button onClick={() => setOpen(true)} variant="contained" color="info" style={{ padding: '12px 24px', borderRadius: 8, textTransform: 'none' }}>
+                <div style={{ fontSize: 14, fontWeight: '700' }}>Change Password</div>
+              </Button>
             </>
           ) : (
             <>
@@ -335,6 +321,8 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
           )}
         </div>
       </div>
+      <ChangePasswordDialog open={open} handleClose={() => setOpen(false)} />
     </Card>
+
   );
 }
