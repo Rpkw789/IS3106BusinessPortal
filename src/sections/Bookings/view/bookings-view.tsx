@@ -125,7 +125,7 @@ export function BookingsView() {
                                     <TableRow>
                                         <TableCell colSpan={7} align="center">
                                             <Typography variant="subtitle1" sx={{ py: 3 }}>
-                                                No Bookings found
+                                                No bookings found
                                             </Typography>
                                         </TableCell>
                                     </TableRow>

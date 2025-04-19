@@ -234,7 +234,7 @@ export function OverviewAnalyticsView() {
 									<TableRow>
 										<TableCell colSpan={7} align="center">
 											<Typography variant="subtitle1" sx={{ py: 3 }}>
-												No Earnings found
+												No earnings found
 											</Typography>
 										</TableCell>
 									</TableRow>
