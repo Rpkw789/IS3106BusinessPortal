@@ -55,6 +55,14 @@ export function NewOneTimeActivityPage() {
     }, []);
 
     const onSubmit = async () => {
+        if (!activityImage) {
+            console.log("No image selected");
+            setSnackbarMessage("Please upload an image before submitting.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+            return;
+        }
+
         try {
             const startDate = new Date(updateData.startDate);
             const timeParts = updateData.frequencyTime.split(":");
@@ -232,8 +240,11 @@ export function NewOneTimeActivityPage() {
                             {/* Activity Time */}
                             <TextField
                                 fullWidth
-                                label="Start Time of Activity (HH:MM)"
+                                label="Activity Start Time"
+                                type="time"
                                 required
+                                InputLabelProps={{ shrink: true }}
+                                inputProps={{ step: 60 }} // accepts time down to the minute
                                 sx={{ mb: 2 }}
                                 onChange={(e) => insertUpdateData("frequencyTime", e.target.value)}
                             />
@@ -282,7 +293,7 @@ export function NewOneTimeActivityPage() {
                 open={openSnackbar}
                 autoHideDuration={3000}
                 onClose={() => setOpenSnackbar(false)}
-                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
                 <Alert severity={snackbarSeverity} onClose={() => setOpenSnackbar(false)}>
                     {snackbarMessage}

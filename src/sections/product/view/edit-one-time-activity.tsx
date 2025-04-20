@@ -291,6 +291,7 @@ export function EditNewOneTimeActivityPage() {
                                 required
                                 InputLabelProps={{ shrink: true }}
                                 inputProps={{ step: 60 }} // accepts time down to the minute
+                                defaultValue={activity && activity.frequencyTime}
                                 sx={{ mb: 2 }}
                                 onChange={(e) => insertUpdateData("frequencyTime", e.target.value)}
                             />
