@@ -2,7 +2,7 @@ import { useForm, Controller, set } from 'react-hook-form';
 import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Snackbar, Alert, Slider, Checkbox } from "@mui/material";
 import { useRouter } from "src/routes/hooks";
 import { useState, useEffect, act } from "react";
-import Api, {address} from 'src/helpers/Api';
+import Api, { address } from 'src/helpers/Api';
 import { v4 as uuidv4 } from 'uuid';
 import { start } from 'repl';
 import { useParams } from 'react-router-dom';
@@ -286,10 +286,12 @@ export function EditNewOneTimeActivityPage() {
                             {/* Activity Time */}
                             <TextField
                                 fullWidth
-                                label="Start Time of Activity (HH:MM)"
+                                label="Activity Start Time"
+                                type="time"
                                 required
+                                InputLabelProps={{ shrink: true }}
+                                inputProps={{ step: 60 }} // accepts time down to the minute
                                 sx={{ mb: 2 }}
-                                defaultValue={activity && activity.frequencyTime}
                                 onChange={(e) => insertUpdateData("frequencyTime", e.target.value)}
                             />
                             {/* Activity Duration */}
@@ -321,7 +323,7 @@ export function EditNewOneTimeActivityPage() {
 
                             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                                 <Button variant="contained" color="primary" type="submit" sx={{ px: 4 }}>
-                                    Add Activity
+                                    Edit Activity
                                 </Button>
                             </Box>
 

@@ -1,10 +1,11 @@
 import { Controller, useForm } from 'react-hook-form';
 import Api from "src/helpers/Api";
-import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Select, InputLabel, MenuItem, Slider, Snackbar, Checkbox } from "@mui/material";
+import { Box, Button, Container, TextField, Typography, RadioGroup, Radio, FormControl, FormLabel, FormControlLabel, Card, CardContent, Select, InputLabel, MenuItem, Slider, Snackbar, Checkbox, Alert } from "@mui/material";
 import { useRouter } from 'src/routes/hooks';
 import { useState, useEffect } from 'react';
 import { MdPhotoCamera } from "react-icons/md";
 import { red } from '@mui/material/colors';
+
 
 // ----------------------------------------------------------------------
 
@@ -41,6 +42,13 @@ export function NewScheduledActivityPage() {
     }, []);
 
     const onSubmit = async () => {
+        if (!activityImage) {
+            console.log("No image selected");
+            setSnackbarMessage("Please upload an image before submitting.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+            return;
+        }
         const token = localStorage.getItem("token");
 
         const startDate = new Date(updateData.startDate);
@@ -239,7 +247,7 @@ export function NewScheduledActivityPage() {
                             onChange={(e) => insertUpdateData("endDate", e.target.value)}
                         />
                         {/* Day Selection */}
-                        <FormControl sx={{ mb: 2, minWidth: 480 }}>
+                        <FormControl sx={{ mb: 2 }} fullWidth>
                             <InputLabel id="day-label">Activity happens on every</InputLabel>
                             <Select
                                 labelId="frequencyDay-label"
@@ -261,8 +269,11 @@ export function NewScheduledActivityPage() {
                         {/* Activity Time */}
                         <TextField
                             fullWidth
-                            label="Activity Start Time (HH:MM in 24-hour format)"
+                            label="Activity Start Time"
+                            type="time"
                             required
+                            InputLabelProps={{ shrink: true }}
+                            inputProps={{ step: 60 }} // accepts time down to the minute
                             sx={{ mb: 2 }}
                             onChange={(e) => insertUpdateData("frequencyTime", e.target.value)}
                         />
@@ -284,6 +295,7 @@ export function NewScheduledActivityPage() {
                                 type="file"
                                 name="file"
                                 hidden
+
                                 accept="image/*"
                                 onChange={handleImageUpload}
                             />
@@ -303,8 +315,18 @@ export function NewScheduledActivityPage() {
                                 {`Activity Created: ${new Date().toLocaleString()}`}
                             </Typography>
                         </Box>
-                    </form>
 
+                    </form>
+                    <Snackbar
+                        open={openSnackbar}
+                        autoHideDuration={3000}
+                        onClose={() => setOpenSnackbar(false)}
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    >
+                        <Alert severity={snackbarSeverity} onClose={() => setOpenSnackbar(false)}>
+                            {snackbarMessage}
+                        </Alert>
+                    </Snackbar>
                 </CardContent>
             </Card>
         </Container>

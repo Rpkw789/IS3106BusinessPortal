@@ -270,17 +270,7 @@ export function ProfileView({ profile, setProfileChanged }: ProfileViewProps) {
           <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E5E8EB', padding: 16 }}>
             <div style={{ flex: 1, paddingRight: 16 }}>
               <div style={{ fontSize: 14, color: '#617A8A' }}>Email</div>
-              {isEditPage ? (<div>
-                <TextField
-                  fullWidth
-                  name="email"
-                  label=""
-                  defaultValue={profile.email}
-                  InputLabelProps={{ shrink: true }}
-                  sx={{ mb: 3, mt: 1 }}
-                  onChange={(e) => insertUpdateData("email", e.target.value)}
-                />
-              </div>) : (<div style={{ fontSize: 14 }}>{profile.email}</div>)}
+              <div style={{ fontSize: 14 }}>{profile.email}</div>
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, color: '#617A8A' }}>Operational Status</div>

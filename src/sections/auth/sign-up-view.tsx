@@ -50,6 +50,12 @@ export function SignUpView() {
 
 
     const handleSignUp = useCallback(() => {
+        if (!formData.name || !formData.email || !formData.password || !formData.phone || !formData.address) {
+            setSnackbarMessage("Please fill in all fields.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+            return;
+        }
         Api.signUp(formData)
             .then((response) => response.json())
             .then((data) => {
